@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.ScatterChart?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+      minWidth="-Infinity" prefHeight="419.0" prefWidth="762.0" xmlns="http://javafx.com/javafx/8.0.101"
+      fx:controller="main.MainSceneController">
+    <MenuBar>
+        <Menu mnemonicParsing="false" text="File">
+            <MenuItem mnemonicParsing="false" onAction="#closeButtonClicked" text="Close"/>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Search Algorithm">
+            <MenuItem disable="true" mnemonicParsing="false" text="Change the search algorithm to use here"/>
+            <SeparatorMenuItem mnemonicParsing="false"/>
+            <MenuItem mnemonicParsing="false" onAction="#setBinarySearchMode" text="Binary Search"/>
+            <MenuItem mnemonicParsing="false" onAction="#setGoldenSectionSearchMode" text="Golden Section Search"/>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Inbuilt Functions">
+            <MenuItem disable="true" mnemonicParsing="false"
+                      text="Select any of these pre-built function to input in to the function field"/>
+            <SeparatorMenuItem mnemonicParsing="false"/>
+            <MenuItem mnemonicParsing="false" onAction="#setToMatyasFunction" text="Matyas Function"/>
+            <MenuItem mnemonicParsing="false" onAction="#setToBoothFunction" text="Booth Function"/>
+            <MenuItem mnemonicParsing="false" onAction="#setToMcCormickFunction" text="McCormick Function"/>
+            <MenuItem mnemonicParsing="false" onAction="#setToLeviFunctionN13" text="Lévi Function N.13"/>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Help">
+            <MenuItem mnemonicParsing="false" onAction="#helpButtonClicked" text="About"/>
+        </Menu>
+    </MenuBar>
+    <SplitPane fx:id="splitPane" dividerPositions="0.49331103678929766" prefHeight="160.0" prefWidth="200.0"
+               VBox.vgrow="ALWAYS">
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+            <VBox prefHeight="373.0" prefWidth="296.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                  AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                <Label text="Function:">
+                    <VBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                    </VBox.margin>
+                </Label>
+                <TextField fx:id="functionTextField">
+                    <VBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                    </VBox.margin>
+                </TextField>
+
+
+                <GridPane>
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                    </rowConstraints>
+                    <TextField fx:id="startPointXTextField" GridPane.rowIndex="2">
+                        <GridPane.margin>
+                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                        </GridPane.margin>
+                    </TextField>
+                    <TextField fx:id="startPointYTextField" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                        <GridPane.margin>
+                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                        </GridPane.margin>
+                    </TextField>
+                    <Label text="Start Point X Coordinate:" GridPane.rowIndex="1">
+                        <GridPane.margin>
+                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                        </GridPane.margin>
+                    </Label>
+                    <Label text="Start Point Y Coordinate:" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <GridPane.margin>
+                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                        </GridPane.margin>
+                    </Label>
+                    <Label text="Bounds:" GridPane.rowIndex="3">
+                        <GridPane.margin>
+                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                        </GridPane.margin>
+                    </Label>
+                    <Label text="Tolerance:" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                        <GridPane.margin>
+                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                        </GridPane.margin>
+                    </Label>
+                    <TextField fx:id="toleranceTextField" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                        <GridPane.margin>
+                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                        </GridPane.margin>
+                        <tooltip>
+                            <Tooltip text="Empty Tooltip"/>
+                        </tooltip>
+                    </TextField>
+                    <TextField fx:id="boundsTextField" GridPane.rowIndex="4">
+                        <GridPane.margin>
+                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                        </GridPane.margin>
+                    </TextField>
+                    <Button alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#onRunButtonClicked"
+                            text="Run / Cancel" GridPane.columnIndex="1" GridPane.halignment="RIGHT"
+                            GridPane.rowIndex="6">
+                        <GridPane.margin>
+                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                        </GridPane.margin>
+                    </Button>
+                    <Label text="Search Algorithm:" GridPane.rowIndex="5">
+                        <GridPane.margin>
+                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                        </GridPane.margin>
+                    </Label>
+                    <Label fx:id="searchAlgorithmIndicator" text="Binary Search (default)" GridPane.rowIndex="6">
+                        <GridPane.margin>
+                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                        </GridPane.margin>
+                    </Label>
+                    <Label GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                    <HBox prefHeight="100.0" prefWidth="200.0">
+                        <Button mnemonicParsing="false" onAction="#addSin" text="sin">
+                            <HBox.margin>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                            </HBox.margin>
+                        </Button>
+                        <Button mnemonicParsing="false" onAction="#AddCos" text="cos">
+                            <HBox.margin>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                            </HBox.margin>
+                        </Button>
+                        <Button mnemonicParsing="false" onAction="#AddTan" text="tan">
+                            <HBox.margin>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                            </HBox.margin>
+                        </Button>
+                        <Button mnemonicParsing="false" onAction="#addE" text="e">
+                            <HBox.margin>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                            </HBox.margin>
+                        </Button>
+                    </HBox>
+                    <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1">
+                        <Button mnemonicParsing="false" onAction="#addSinSquared" text="sin2">
+                            <HBox.margin>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                            </HBox.margin>
+                        </Button>
+                        <Button mnemonicParsing="false" onAction="#addCosSquared" text="cos2">
+                            <HBox.margin>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                            </HBox.margin>
+                        </Button>
+                        <Button mnemonicParsing="false" onAction="#addTanSquared" text="tan2">
+                            <HBox.margin>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                            </HBox.margin>
+                        </Button>
+                        <Button mnemonicParsing="false" onAction="#addPi" text="pi">
+                            <HBox.margin>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                            </HBox.margin>
+                        </Button>
+                    </HBox>
+
+                    <VBox.margin>
+                        <Insets/>
+                    </VBox.margin>
+                </GridPane>
+                <ProgressIndicator fx:id="progressIndicator" disable="true" progress="1.0" visible="false">
+                    <VBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                    </VBox.margin>
+                </ProgressIndicator>
+
+            </VBox>
+        </AnchorPane>
+        <AnchorPane>
+            <VBox prefHeight="373.0" prefWidth="296.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                  AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                <ToolBar minWidth="0.0" prefHeight="40.0" prefWidth="200.0">
+                    <MenuButton mnemonicParsing="false" text="Save / Load">
+                        <items>
+                            <MenuItem mnemonicParsing="false" onAction="#saveThisSetOfResults"
+                                      text="Save this set of results"/>
+                            <MenuItem mnemonicParsing="false" onAction="#loadResultsFromFile"
+                                      text="Load results from file"/>
+                            <MenuItem mnemonicParsing="false" onAction="#loadTheseResultsInNewWindow"
+                                      text="Load these results in a new window"/>
+                            <MenuItem mnemonicParsing="false" onAction="#loadResultsFromFileInNewWindow"
+                                      text="Load results from file in a new window"/>
+                        </items>
+                    </MenuButton>
+                    <CheckBox fx:id="clearExistingDataCheckbox" mnemonicParsing="false" selected="true"
+                              text="Clear Existing Data?"/>
+                    <Button mnemonicParsing="false" onAction="#twoDimensionalGraphMode" text="2D Mode"/>
+                </ToolBar>
+                <ScatterChart fx:id="mainSceneGraph" minWidth="0.0" opacity="0.25" title="No results to show"
+                              VBox.vgrow="ALWAYS">
+                    <xAxis>
+                        <NumberAxis label="y" side="BOTTOM"/>
+                    </xAxis>
+                    <yAxis>
+                        <NumberAxis label="x" side="LEFT"/>
+                    </yAxis>
+                </ScatterChart>
+            </VBox>
+        </AnchorPane>
+    </SplitPane>
+</VBox>
