@@ -63,9 +63,9 @@ public class ConjugateDirectionSearch {
                     localCoordinateStack.peek().getYValue() - (getVectorY() * (getBounds() / boundsTightener)));
 
 
-            double fOfCurrentPoint = MathExpression.outputFOfXY(localCoordinateStack.peek());
-            double fOfUpperBound = MathExpression.outputFOfXY(upperBounds);
-            double fOfLowerBound = MathExpression.outputFOfXY(lowerBounds);
+            double fOfCurrentPoint = Function.outputFOfXY(localCoordinateStack.peek());
+            double fOfUpperBound = Function.outputFOfXY(upperBounds);
+            double fOfLowerBound = Function.outputFOfXY(lowerBounds);
 
             if ((fOfLowerBound > fOfCurrentPoint)
                     && (fOfLowerBound > fOfUpperBound)) {
@@ -90,15 +90,9 @@ public class ConjugateDirectionSearch {
             Coordinate previousPoint = localCoordinateStack.peek();
 
 
-            if (Math.abs(MathExpression.outputFOfXY(currentPoint) - MathExpression.outputFOfXY(previousPoint))
+            if (Math.abs(Function.outputFOfXY(currentPoint) - Function.outputFOfXY(previousPoint))
                     < tolerance) {
-                /*
-                    TODO remove System.out usage
-                 */
-                //noinspection UseOfSystemOutOrSystemErr
-                System.out.println("DONE");
-                //noinspection UseOfSystemOutOrSystemErr
-                System.out.println(localCoordinateStack.peek().toString());
+                // TODO integrate logger
                 setFinalCoordinate(localCoordinateStack.pop());
                 break;
             }

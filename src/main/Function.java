@@ -5,18 +5,18 @@ import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Stack;
 
-class MathExpression {
+class Function {
 
     private static String infixExpression;
 
     private static String postfixExpression;
 
     static void convertInfixToPostfix() {
-        MathExpression.postfixExpression = MathExpression.convert(MathExpression.infixExpression);
+        Function.postfixExpression = Function.convert(Function.infixExpression);
     }
 
     static double outputFOfXY(Coordinate coordinateToUse) throws EvaluationException {
-        return MathExpression.parse(MathExpression.postfixExpression, coordinateToUse.getXValue(), coordinateToUse.getYValue());
+        return Function.parse(Function.postfixExpression, coordinateToUse.getXValue(), coordinateToUse.getYValue());
     }
 
     private static String convert(String infix) {
@@ -27,14 +27,14 @@ class MathExpression {
         }
         Stack<String> operatorStack = new Stack<>();
         StringBuilder outputBuilder = new StringBuilder();
-        String[] uncheckedTokens = MathExpression.tokeniseString(infix);
+        String[] uncheckedTokens = Function.tokeniseString(infix);
         ArrayList<String> checkedTokensList = new ArrayList<>();
         // Since unary minus could be counted as an operator, we need to check
         // for it
         for (int index = 0; index < uncheckedTokens.length; index++) {
             if (index > 0) {
                 // Two consecutive operators test
-                if (uncheckedTokens[index].equals("-") && MathExpression.isOperator(uncheckedTokens[index - 1])) {
+                if (uncheckedTokens[index].equals("-") && Function.isOperator(uncheckedTokens[index - 1])) {
                     uncheckedTokens[index] = "";
                     uncheckedTokens[index + 1] = "-" + uncheckedTokens[index + 1];
                     // Current token is obsolete
@@ -56,20 +56,20 @@ class MathExpression {
         String[] checkedTokens = checkedTokensList.toArray(new String[0]);
 
         for (String currentToken : checkedTokens) {
-            if (MathExpression.checkIfOperand(currentToken)) {
+            if (Function.checkIfOperand(currentToken)) {
                 outputBuilder.append(currentToken).append(",");
 
-            } else if (MathExpression.isLeftParenthesis(currentToken)) {
+            } else if (Function.isLeftParenthesis(currentToken)) {
                 operatorStack.push(currentToken);
-            } else if (MathExpression.isRightParenthesis(currentToken)) {
-                while (!MathExpression.isLeftParenthesis(operatorStack.peek())) {
+            } else if (Function.isRightParenthesis(currentToken)) {
+                while (!Function.isLeftParenthesis(operatorStack.peek())) {
                     outputBuilder.append(operatorStack.pop()).append(",");
                 }
                 operatorStack.pop();
-            } else if (MathExpression.isOperator(currentToken)) {
+            } else if (Function.isOperator(currentToken)) {
                 for (; ; ) {
                     if (!operatorStack.isEmpty()) {
-                        if (MathExpression.isHigherPrecedence(currentToken, operatorStack.peek())) {
+                        if (Function.isHigherPrecedence(currentToken, operatorStack.peek())) {
                             outputBuilder.append(operatorStack.pop()).append(",");
                         } else {
                             break;
@@ -232,10 +232,10 @@ class MathExpression {
     }
 
     String getInfixExpression() {
-        return MathExpression.infixExpression;
+        return Function.infixExpression;
     }
 
     static void setInfixExpression(String algorithmString) {
-        MathExpression.infixExpression = algorithmString;
+        Function.infixExpression = algorithmString;
     }
 }

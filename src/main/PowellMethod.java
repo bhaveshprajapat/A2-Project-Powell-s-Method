@@ -7,6 +7,7 @@ import java.util.ArrayList;
     Powell Method Class
  */
 public class PowellMethod extends Thread implements Serializable {
+    private static final long serialVersionUID = -4101739456805897681L;
     private double Tolerance;
     private double Bounds;
     private Coordinate StartPoint;
@@ -14,19 +15,17 @@ public class PowellMethod extends Thread implements Serializable {
     private boolean Completed = false;
     private boolean FatalExceptionOccurred = false;
     private boolean FatalErrorOccurred = false;
-    private LinMin linMin;
+    private transient LinMin linMin;
     private ArrayList<Coordinate> UnitVectorSearchList = new ArrayList<>();
     private ArrayList<Coordinate> ConjugateDirectionSearchList = new ArrayList<>();
     private Coordinate finalCoordinate;
-    private SearchMethod searchMethod;
     private String function;
-    private ConjugateDirectionSearch conjugateDirectionSearch;
+    private transient ConjugateDirectionSearch conjugateDirectionSearch;
 
     public PowellMethod(double tolerance, double bounds, Coordinate startPoint, SearchMethod searchMethod, String function) {
         Tolerance = tolerance;
         Bounds = bounds;
         StartPoint = startPoint;
-        this.searchMethod = searchMethod;
         this.function = function;
         switch (searchMethod) {
             case binarySearch:
@@ -110,7 +109,7 @@ public class PowellMethod extends Thread implements Serializable {
             Coordinate current = getLinMin().getFinalCoordinate();
             // calculates tolerance in case we're already at minimum
             try {
-                if (Math.abs(MathExpression.outputFOfXY(last) - MathExpression.outputFOfXY(current))
+                if (Math.abs(Function.outputFOfXY(last) - Function.outputFOfXY(current))
                         < getTolerance()) {
                     break;
                 } else {
@@ -228,7 +227,6 @@ public class PowellMethod extends Thread implements Serializable {
 // --Commented out by Inspection STOP (05/02/2017 22:09)
 
     public void setSearchMethod(SearchMethod searchMethod) {
-        this.searchMethod = searchMethod;
     }
 
     public String getFunction() {

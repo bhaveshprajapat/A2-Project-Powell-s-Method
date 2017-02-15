@@ -4,7 +4,10 @@ package main;
     Coordinate class to store coordinates
  */
 
-public class Coordinate {
+import java.io.Serializable;
+
+public class Coordinate implements Serializable {
+    private static final long serialVersionUID = -5933363260711222652L;
     private double XValue;
     private double YValue;
 

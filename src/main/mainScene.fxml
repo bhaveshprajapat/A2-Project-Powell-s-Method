@@ -12,7 +12,7 @@
         <Menu mnemonicParsing="false" text="File">
             <MenuItem mnemonicParsing="false" onAction="#closeButtonClicked" text="Close"/>
         </Menu>
-        <Menu mnemonicParsing="false" text="Search Algorithm">
+        <Menu mnemonicParsing="false" text="Change Search Algorithm">
             <MenuItem disable="true" mnemonicParsing="false" text="Change the search algorithm to use here"/>
             <SeparatorMenuItem mnemonicParsing="false"/>
             <MenuItem mnemonicParsing="false" onAction="#setBinarySearchMode" text="Binary Search"/>

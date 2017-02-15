@@ -43,6 +43,7 @@ public class MainSceneController {
     private SearchMethod AlgorithmToUse = SearchMethod.binarySearch;
     private PowellMethod runResult;
     private PowellMethod loadedResult;
+    private PowellMethod powellMethod;
 
     public void setBinarySearchMode(ActionEvent actionEvent) {
         /*
@@ -197,6 +198,11 @@ public class MainSceneController {
     }
 
     public void onRunButtonClicked(ActionEvent actionEvent) {
+        if (powellMethod != null) {
+            if (powellMethod.isAlive()) {
+                powellMethod.interrupt();
+            }
+        }
         mainSceneGraph.opacityProperty().setValue(100);
         if (progressIndicator.disabledProperty().getValue()) {
             progressIndicator.setDisable(false);
@@ -207,8 +213,8 @@ public class MainSceneController {
         progressIndicator.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
 
         // Initialise variables
-        MathExpression.setInfixExpression(functionTextField.getText());
-        MathExpression.convertInfixToPostfix();
+        Function.setInfixExpression(functionTextField.getText());
+        Function.convertInfixToPostfix();
         double startPointX;
         double startPointY;
         double tolerance;
@@ -235,7 +241,7 @@ public class MainSceneController {
          */
 
         try {
-            MathExpression.outputFOfXY(new Coordinate(startPointX, startPointY));
+            Function.outputFOfXY(new Coordinate(startPointX, startPointY));
         } catch (RuntimeException e) {
             progressIndicator.setProgress(0);
             Alert badFunction = new Alert(Alert.AlertType.ERROR);
@@ -261,7 +267,7 @@ public class MainSceneController {
         }
 
         Coordinate startCoordinate = new Coordinate(startPointX, startPointY);
-        PowellMethod powellMethod = new PowellMethod(tolerance, bounds, startCoordinate, AlgorithmToUse, functionTextField.getText());
+        powellMethod = new PowellMethod(tolerance, bounds, startCoordinate, AlgorithmToUse, functionTextField.getText());
         powellMethod.start();
         setRunResult(powellMethod);
         FutureTask<Void> UIUpdate = new FutureTask<>(() -> {
@@ -269,13 +275,6 @@ public class MainSceneController {
             updateGraphSameWindow(powellMethod);
         }, null);
         Platform.runLater(UIUpdate);
-
-        // TODO test whether this code here actually does anything
-        /*Result thisResult = new Result();
-        this.setRunResult(thisResult);
-        updateGraphSameWindow(this.getRunResult().getFinalCoordinate(), this.getRunResult().getExpression(), this.createSeriesFromArrayList(this.getRunResult().getRegularSearchCoordinateList()), this.createSeriesFromArrayList(this.getRunResult().getVectorLineSearchCoordinateList()), this.clearExistingDataCheckbox.isSelected());
-        this.setLoadedResult(this.getRunResult());*/
-        //updateGraphSameWindow(threadResult[0]);
     }
 
     private void updateGraphSameWindow(PowellMethod result) {
@@ -300,10 +299,8 @@ public class MainSceneController {
             String sep = System.getProperty("line.separator");
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Information about this loaded result");
-            // TODO Insert content title
             alert.setContentText(
-                    // TODO improve this text slightly
-                    "Expression used was:"
+                    "The function used in this optimisation was:"
                             + sep + function
             );
             alert.show();
@@ -318,7 +315,7 @@ public class MainSceneController {
 
     }
 
-    // TODO Check if needed to generate results file.
+/*
     private PowellMethod generateResultObject(ArrayList<Coordinate> vlsCoordinateList, ArrayList<Coordinate> regularSearchCoordinateList, Coordinate finalCoordinate,
                                               String expression, SearchMethod searchMethod) {
         PowellMethod objectToReturn = new PowellMethod();
@@ -328,7 +325,7 @@ public class MainSceneController {
         objectToReturn.setSearchMethod(searchMethod);
         objectToReturn.setFunction(expression);
         return objectToReturn;
-    }
+    }*/
 
     private ScatterChart.Series<Number, Number> createSeriesFromArrayList(ArrayList<Coordinate> ArrayListToConvert) {
         ScatterChart.Series<Number, Number> objectToReturn = new ScatterChart.Series();
