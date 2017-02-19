@@ -1,6 +1,6 @@
 package main;
-
 public class BinarySearch extends LinMin {
+    // binary search in one dimension
     @Override
     void startSearch() throws EvaluationException {
         Coordinate PreviousCoordinate = getStartPoint();
@@ -11,7 +11,6 @@ public class BinarySearch extends LinMin {
             boolean OptimisingByX = (getSearchDirection() == SearchDirection.Vector_I);
             vectorX = OptimisingByX ? 1 : 0;
             vectorY = OptimisingByX ? 0 : 1;
-
             // Creates lower boundary
             double lowerBoundaryXValue = PreviousCoordinate.getXValue() - vectorX * (getBounds() / (BoundaryRestriction));
             double lowerBoundaryYValue = PreviousCoordinate.getYValue() - vectorY * (getBounds() / (BoundaryRestriction));
@@ -24,7 +23,6 @@ public class BinarySearch extends LinMin {
             double zOFUpperBound = Function.outputFOfXY(upperBoundary);
             double zOFLowerBound = Function.outputFOfXY(lowerBoundary);
             double zOfCurrentPoint = Function.outputFOfXY(getStartPoint());
-
             // Shifts upper bound if its output is highest
             if ((zOFUpperBound > zOfCurrentPoint)
                     && (zOFUpperBound > zOFLowerBound)) {
@@ -37,8 +35,6 @@ public class BinarySearch extends LinMin {
                 lowerBoundary.setXValue(getStartPoint().getXValue());
                 lowerBoundary.setYValue(getStartPoint().getYValue());
             }
-
-
             // Creates the midpoint between the new bounds and sets the current point
             Coordinate midpoint = new Coordinate(
                     (upperBoundary.getXValue() + lowerBoundary.getXValue()) / 2,
@@ -53,7 +49,6 @@ public class BinarySearch extends LinMin {
                 BoundaryRestriction *= 2;
                 PreviousCoordinate = new Coordinate(midpoint.getXValue(), midpoint.getYValue());
             }
-
         }
     }
 }

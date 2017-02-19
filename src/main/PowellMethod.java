@@ -1,10 +1,8 @@
 package main;
-
 import java.io.Serializable;
 import java.util.ArrayList;
-
 /*
-    Powell Method Class
+    Powell Method Class that can be written to a binary file
  */
 public class PowellMethod extends Thread implements Serializable {
     private static final long serialVersionUID = -4101739456805897681L;
@@ -21,59 +19,44 @@ public class PowellMethod extends Thread implements Serializable {
     private Coordinate finalCoordinate;
     private String function;
     private transient ConjugateDirectionSearch conjugateDirectionSearch;
-
+    // Class constructor
     public PowellMethod(double tolerance, double bounds, Coordinate startPoint, SearchMethod searchMethod, String function) {
         Tolerance = tolerance;
         Bounds = bounds;
         StartPoint = startPoint;
         this.function = function;
+        // initialise linMin with the correct search method
         switch (searchMethod) {
             case binarySearch:
                 setLinMin(new BinarySearch());
                 break;
             case goldenSectionSearch:
-
+                setLinMin(new GoldenSectionSearch());
                 break;
         }
         setConjugateDirectionSearch(new ConjugateDirectionSearch());
     }
-
-    public PowellMethod() {
-
-    }
-
+    //Getter method for conjugate direction search
     public ConjugateDirectionSearch getConjugateDirectionSearch() {
         return conjugateDirectionSearch;
     }
-
+    // setter for conjugate direction search
     public void setConjugateDirectionSearch(ConjugateDirectionSearch conjugateDirectionSearch) {
         this.conjugateDirectionSearch = conjugateDirectionSearch;
     }
-
+    // getter for tolerance
     public double getTolerance() {
         return Tolerance;
     }
-
+    // getter for bounds
     public double getBounds() {
         return Bounds;
     }
-
-// --Commented out by Inspection START (05/02/2017 22:09):
-//    public void setTolerance(double tolerance) {
-//        Tolerance = tolerance;
-//    }
-// --Commented out by Inspection STOP (05/02/2017 22:09)
-
+    // gettter for start point
     public Coordinate getStartPoint() {
         return StartPoint;
     }
-
-// --Commented out by Inspection START (05/02/2017 22:09):
-//    public void setBounds(double bounds) {
-//        Bounds = bounds;
-//    }
-// --Commented out by Inspection STOP (05/02/2017 22:09)
-
+    // start method for powell method search that overrides start in java.lang.Thread
     @Override
     public synchronized void start() {
         super.start();
@@ -83,6 +66,7 @@ public class PowellMethod extends Thread implements Serializable {
         initialRun = true;
         optimisingByX = false;
         int ListSize;
+        // add start point to list
         getUnitVectorSearchList().add(getStartPoint());
         // loop over linmin
         while (true) {
@@ -102,7 +86,6 @@ public class PowellMethod extends Thread implements Serializable {
             }
             // Adds linmin result to list
             getUnitVectorSearchList().add(getLinMin().getFinalCoordinate());
-
             ListSize = getUnitVectorSearchList().size();
             //reset last and current points
             Coordinate last = getUnitVectorSearchList().get(ListSize - 2);
@@ -113,22 +96,23 @@ public class PowellMethod extends Thread implements Serializable {
                         < getTolerance()) {
                     break;
                 } else {
+                    // run another optmisation
                     optimisingByX = !optimisingByX;
                     initialRun = false;
                     Iterations += 1;
                 }
             } catch (EvaluationException e) {
+                // some fatal error occured
                 setFatalErrorOccured();
                 setCompleted(false);
                 return;
             }
+            // exit the method
             if (Iterations > 7) {
                 break;
             }
         }
-
-
-        // Begin conjugate direction search
+        // initialise conjugate direction search
         getConjugateDirectionSearch().setStartPoint(getUnitVectorSearchList().get(getUnitVectorSearchList().size() - 1));
         Coordinate lastPoint = getUnitVectorSearchList().get(getUnitVectorSearchList().size() - 1);
         Coordinate thirdFromLastPoint = getUnitVectorSearchList().get(getUnitVectorSearchList().size() - 3);
@@ -143,97 +127,57 @@ public class PowellMethod extends Thread implements Serializable {
             System.out.println(getFinalCoordinate().toString());
             setCompleted(true);
         } catch (EvaluationException e) {
-            //TODO wtf?
+            // catch any errors that occur during running
             setFatalErrorOccured();
             setFatalExceptionOccured();
             setConjugateDirectionSearchList(getConjugateDirectionSearch().getConjugateDirectionSearchList());
             setConjugateDirectionSearch(null);
         }
-
     }
-
-// --Commented out by Inspection START (05/02/2017 22:09):
-//    public void setStartPoint(Coordinate startPoint) {
-//        StartPoint = startPoint;
-//    }
-// --Commented out by Inspection STOP (05/02/2017 22:09)
-
+    // completed boolean setter
     public void setCompleted(boolean completed) {
         Completed = completed;
     }
-
-// --Commented out by Inspection START (05/02/2017 22:09):
-//    public boolean isCompleted() {
-//        return Completed;
-//    }
-// --Commented out by Inspection STOP (05/02/2017 22:09)
-
+    // fatal error boolean setter
     public void setFatalErrorOccured() {
         FatalErrorOccurred = true;
     }
-
-// --Commented out by Inspection START (05/02/2017 22:09):
-//    public boolean isFatalErrorOccured() {
-//        return FatalErrorOccurred;
-//    }
-// --Commented out by Inspection STOP (05/02/2017 22:09)
-
     public ArrayList<Coordinate> getUnitVectorSearchList() {
         return UnitVectorSearchList;
     }
-
     public void setUnitVectorSearchList(ArrayList<Coordinate> unitVectorSearchList) {
         UnitVectorSearchList = unitVectorSearchList;
     }
-
+    // getter for conjugate direction search list
     public ArrayList<Coordinate> getConjugateDirectionSearchList() {
         return ConjugateDirectionSearchList;
     }
-
+    // setter for conjugate direction search list
     public void setConjugateDirectionSearchList(ArrayList<Coordinate> conjugateDirectionSearchList) {
         ConjugateDirectionSearchList = conjugateDirectionSearchList;
     }
-
+    // getter for linmin
     public LinMin getLinMin() {
         return linMin;
     }
-
+    // setter for linmin
     public void setLinMin(LinMin linMin) {
         this.linMin = linMin;
     }
-
-// --Commented out by Inspection START (05/02/2017 22:09):
-//    public boolean isFatalExceptionOccured() {
-//        return FatalExceptionOccurred;
-//    }
-// --Commented out by Inspection STOP (05/02/2017 22:09)
-
+    // fatal exception boolean setter
     public void setFatalExceptionOccured() {
         FatalExceptionOccurred = true;
     }
-
+    // getter for final coordinate
     public Coordinate getFinalCoordinate() {
         return finalCoordinate;
     }
-
+    // setter for final coordinate
     public void setFinalCoordinate(Coordinate finalCoordinate) {
         this.finalCoordinate = finalCoordinate;
     }
-
-// --Commented out by Inspection START (05/02/2017 22:09):
-//    public SearchMethod getSearchMethod() {
-//        return searchMethod;
-//    }
-// --Commented out by Inspection STOP (05/02/2017 22:09)
-
-    public void setSearchMethod(SearchMethod searchMethod) {
-    }
-
+    // getter for function
     public String getFunction() {
         return function;
-    }
-
-    public void setFunction(String function) {
-        this.function = function;
     }
 }

@@ -1,24 +1,18 @@
 package main;
-
 import java.util.ArrayList;
 import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Stack;
-
 class Function {
-
     private static String infixExpression;
-
     private static String postfixExpression;
-
-    static void convertInfixToPostfix() {
+    public static void convertInfixToPostfix() {
         Function.postfixExpression = Function.convert(Function.infixExpression);
     }
-
-    static double outputFOfXY(Coordinate coordinateToUse) throws EvaluationException {
+    public static double outputFOfXY(Coordinate coordinateToUse) throws EvaluationException {
         return Function.parse(Function.postfixExpression, coordinateToUse.getXValue(), coordinateToUse.getYValue());
     }
-
+    // private methof converts a given string to RPN
     private static String convert(String infix) {
         for (int i = 0; i < infix.length(); i++) {
             if (infix.charAt(i) == ' ') {
@@ -54,11 +48,9 @@ class Function {
         }
         // Convert the ArrayList to an array
         String[] checkedTokens = checkedTokensList.toArray(new String[0]);
-
         for (String currentToken : checkedTokens) {
             if (Function.checkIfOperand(currentToken)) {
                 outputBuilder.append(currentToken).append(",");
-
             } else if (Function.isLeftParenthesis(currentToken)) {
                 operatorStack.push(currentToken);
             } else if (Function.isRightParenthesis(currentToken)) {
@@ -81,23 +73,18 @@ class Function {
                 operatorStack.push(currentToken);
             }
         }
-
         while (!operatorStack.isEmpty()) {
             outputBuilder.append(operatorStack.pop()).append(",");
         }
-
         String finalResult = outputBuilder.toString();
         return finalResult.substring(0, finalResult.length() - 1);
     }
-
     private static boolean isRightParenthesis(String currentToken) {
         return currentToken.equals(")");
     }
-
     private static boolean isOperator(String currentToken) {
         return currentToken.matches("[*/+\\-\\^(]|s|c|t");
     }
-
     private static boolean isHigherPrecedence(String currentToken, String peek) {
         HashMap<String, Integer> operationPrecedenceMap = new HashMap<>();
         operationPrecedenceMap.put("+", 1);
@@ -113,20 +100,15 @@ class Function {
         int peekPrecedence = operationPrecedenceMap.get(peek);
         return peekPrecedence >= currentTokenPrecedence;
     }
-
     private static boolean isLeftParenthesis(String currentToken) {
         return currentToken.equals("(");
-
     }
-
     private static boolean checkIfOperand(String currentToken) {
         return currentToken.matches("(?:\\d*\\.?\\d+)|[xype]|pi");
     }
-
     private static String[] tokeniseString(String stringToTokenise) {
         return stringToTokenise.split("(?<=[-+^*/()])|(?=[-+*/()^])|(?=[a-z])|(?<=.[a-z])|(?<=[a-z])");
     }
-
     private static double parse(String RPNToParse, double x, double y) throws EvaluationException {
         // Test if the string is equal to an empty string
         if (RPNToParse.equals("")) {
@@ -230,11 +212,9 @@ class Function {
         }
         return Double.valueOf(stack.pop());
     }
-
     String getInfixExpression() {
         return Function.infixExpression;
     }
-
     static void setInfixExpression(String algorithmString) {
         Function.infixExpression = algorithmString;
     }
