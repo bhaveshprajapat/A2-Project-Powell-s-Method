@@ -40,6 +40,7 @@ public class ConjugateDirectionSearch {
 
     // begins conjugate direction search
     public void start() throws EvaluationException {
+        Function function = new Function();
         // Initialise stack and get coordinates from unit vector searches
         Stack<Coordinate> localCoordinateStack = new Stack<>();
         /*
@@ -55,9 +56,9 @@ public class ConjugateDirectionSearch {
             Coordinate lowerBounds = new Coordinate(
                     localCoordinateStack.peek().getXValue() - (getVectorX() * (getBounds() / boundsTightener)),
                     localCoordinateStack.peek().getYValue() - (getVectorY() * (getBounds() / boundsTightener)));
-            double fOfCurrentPoint = Function.outputFOfXY(localCoordinateStack.peek());
-            double fOfUpperBound = Function.outputFOfXY(upperBounds);
-            double fOfLowerBound = Function.outputFOfXY(lowerBounds);
+            double fOfCurrentPoint = function.outputFOfXY(localCoordinateStack.peek());
+            double fOfUpperBound = function.outputFOfXY(upperBounds);
+            double fOfLowerBound = function.outputFOfXY(lowerBounds);
             if ((fOfLowerBound > fOfCurrentPoint)
                     && (fOfLowerBound > fOfUpperBound)) {
                 lowerBounds.setXValue(localCoordinateStack.peek().getXValue());
@@ -75,7 +76,7 @@ public class ConjugateDirectionSearch {
             Coordinate currentPoint = localCoordinateStack.pop();
             localCoordinateStack.add(midpoint);
             Coordinate previousPoint = localCoordinateStack.peek();
-            if (Math.abs(Function.outputFOfXY(currentPoint) - Function.outputFOfXY(previousPoint))
+            if (Math.abs(function.outputFOfXY(currentPoint) - function.outputFOfXY(previousPoint))
                     < tolerance) {
                 // TODO integrate logger
                 setFinalCoordinate(localCoordinateStack.pop());

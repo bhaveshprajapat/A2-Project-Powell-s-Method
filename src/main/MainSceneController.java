@@ -194,6 +194,7 @@ public class MainSceneController {
     }
 
     public void onRunButtonClicked(ActionEvent actionEvent) {
+        Function function = new Function();
         if (powellMethod != null) {
             if (powellMethod.isAlive()) {
                 powellMethod.interrupt();
@@ -207,8 +208,8 @@ public class MainSceneController {
         progressIndicator.setDisable(false);
         progressIndicator.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
         // Initialise variables
-        Function.setInfixExpression(functionTextField.getText());
-        Function.convertInfixToPostfix();
+        function.setInfixExpression(functionTextField.getText());
+        function.convertInfixToPostfix();
         double startPointX;
         double startPointY;
         double tolerance;
@@ -218,6 +219,12 @@ public class MainSceneController {
             startPointY = Double.parseDouble(startPointYTextField.getText());
             tolerance = Double.parseDouble(toleranceTextField.getText());
             bounds = Double.parseDouble(boundsTextField.getText());
+            if (tolerance == 0D) {
+                throw new NumberFormatException("The tolerance value must be > 0");
+            }
+            if (bounds == 0D) {
+                throw new NumberFormatException("The bounds value must be > 0");
+            }
         } catch (NumberFormatException e) {
             // Show a message with the bad input
             Alert BadInputAlert = new Alert(Alert.AlertType.ERROR);
@@ -228,13 +235,14 @@ public class MainSceneController {
             progressIndicator.setProgress(0);
             return;
         }
+
         /*
         This try block shows errors if the function entered is badly formatted,
         or even if the function is blank. It then shows a message explaining the
         error in detail.
          */
         try {
-            Function.outputFOfXY(new Coordinate(startPointX, startPointY));
+            function.outputFOfXY(new Coordinate(startPointX, startPointY));
         } catch (RuntimeException e) {
             progressIndicator.setProgress(0);
             Alert badFunction = new Alert(Alert.AlertType.ERROR);

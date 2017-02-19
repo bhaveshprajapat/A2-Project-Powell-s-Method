@@ -9,64 +9,37 @@ class Function {
     private static String infixExpression;
     private static String postfixExpression;
 
-    public static void convertInfixToPostfix() {
-        Function.postfixExpression = Function.convert(Function.infixExpression);
+    public void convertInfixToPostfix() {
+        Function.postfixExpression = convert(Function.infixExpression);
     }
 
-    public static double outputFOfXY(Coordinate coordinateToUse) throws EvaluationException {
-        return Function.parse(Function.postfixExpression, coordinateToUse.getXValue(), coordinateToUse.getYValue());
+    public double outputFOfXY(Coordinate coordinateToUse) throws EvaluationException {
+        return parse(Function.postfixExpression, coordinateToUse.getXValue(), coordinateToUse.getYValue());
     }
 
-    // private methof converts a given string to RPN
-    private static String convert(String infix) {
-        for (int i = 0; i < infix.length(); i++) {
-            if (infix.charAt(i) == ' ') {
-                infix = new StringBuilder(infix).deleteCharAt(i).toString();
-            }
-        }
+    // private method converts a given string to RPN
+    private String convert(String infix) {
         Stack<String> operatorStack = new Stack<>();
         StringBuilder outputBuilder = new StringBuilder();
-        String[] uncheckedTokens = Function.tokeniseString(infix);
-        ArrayList<String> checkedTokensList = new ArrayList<>();
-        // Since unary minus could be counted as an operator, we need to check
-        // for it
-        for (int index = 0; index < uncheckedTokens.length; index++) {
-            if (index > 0) {
-                // Two consecutive operators test
-                if (uncheckedTokens[index].equals("-") && Function.isOperator(uncheckedTokens[index - 1])) {
-                    uncheckedTokens[index] = "";
-                    uncheckedTokens[index + 1] = "-" + uncheckedTokens[index + 1];
-                    // Current token is obsolete
-                    continue;
-                }
-            }
-            if (index == 0) {
-                // '-' at start test
-                if (uncheckedTokens[index].equals("-")) {
-                    uncheckedTokens[index + 1] = "-" + uncheckedTokens[index + 1];
-                    // Current token is obsolete
-                    checkedTokensList.add(uncheckedTokens[index]);
-                    continue;
-                }
-            }
-            checkedTokensList.add(uncheckedTokens[index]);
-        }
-        // Convert the ArrayList to an array
-        String[] checkedTokens = checkedTokensList.toArray(new String[0]);
+
+        infix = removeAllSpaces(infix);
+        String[] uncheckedTokens = tokeniseString(infix);
+        // Check tokens
+        String[] checkedTokens = checkTokens(uncheckedTokens);
         for (String currentToken : checkedTokens) {
-            if (Function.checkIfOperand(currentToken)) {
+            if (checkIfOperand(currentToken)) {
                 outputBuilder.append(currentToken).append(",");
-            } else if (Function.isLeftParenthesis(currentToken)) {
+            } else if (isLeftParenthesis(currentToken)) {
                 operatorStack.push(currentToken);
-            } else if (Function.isRightParenthesis(currentToken)) {
-                while (!Function.isLeftParenthesis(operatorStack.peek())) {
+            } else if (isRightParenthesis(currentToken)) {
+                while (!isLeftParenthesis(operatorStack.peek())) {
                     outputBuilder.append(operatorStack.pop()).append(",");
                 }
                 operatorStack.pop();
-            } else if (Function.isOperator(currentToken)) {
-                for (; ; ) {
+            } else if (isOperator(currentToken)) {
+                while (true) {
                     if (!operatorStack.isEmpty()) {
-                        if (Function.isHigherPrecedence(currentToken, operatorStack.peek())) {
+                        if (isHigherPrecedence(currentToken, operatorStack.peek())) {
                             outputBuilder.append(operatorStack.pop()).append(",");
                         } else {
                             break;
@@ -85,15 +58,15 @@ class Function {
         return finalResult.substring(0, finalResult.length() - 1);
     }
 
-    private static boolean isRightParenthesis(String currentToken) {
+    private boolean isRightParenthesis(String currentToken) {
         return currentToken.equals(")");
     }
 
-    private static boolean isOperator(String currentToken) {
+    private boolean isOperator(String currentToken) {
         return currentToken.matches("[*/+\\-\\^(]|s|c|t");
     }
 
-    private static boolean isHigherPrecedence(String currentToken, String peek) {
+    private boolean isHigherPrecedence(String currentToken, String peek) {
         HashMap<String, Integer> operationPrecedenceMap = new HashMap<>();
         operationPrecedenceMap.put("+", 1);
         operationPrecedenceMap.put("-", 1);
@@ -109,19 +82,19 @@ class Function {
         return peekPrecedence >= currentTokenPrecedence;
     }
 
-    private static boolean isLeftParenthesis(String currentToken) {
+    private boolean isLeftParenthesis(String currentToken) {
         return currentToken.equals("(");
     }
 
-    private static boolean checkIfOperand(String currentToken) {
+    private boolean checkIfOperand(String currentToken) {
         return currentToken.matches("(?:\\d*\\.?\\d+)|[xype]|pi");
     }
 
-    private static String[] tokeniseString(String stringToTokenise) {
+    private String[] tokeniseString(String stringToTokenise) {
         return stringToTokenise.split("(?<=[-+^*/()])|(?=[-+*/()^])|(?=[a-z])|(?<=.[a-z])|(?<=[a-z])");
     }
 
-    private static double parse(String RPNToParse, double x, double y) throws EvaluationException {
+    private double parse(String RPNToParse, double x, double y) throws EvaluationException {
         // Test if the string is equal to an empty string
         if (RPNToParse.equals("")) {
             throw new EvaluationException("RPN String cannot be empty");
@@ -229,7 +202,44 @@ class Function {
         return Function.infixExpression;
     }
 
-    static void setInfixExpression(String algorithmString) {
+    void setInfixExpression(String algorithmString) {
         Function.infixExpression = algorithmString;
+    }
+
+    String[] checkTokens(String[] uncheckedTokenArray) {
+        ArrayList<String> checkedTokensList = new ArrayList<>();
+        // Since unary minus could be counted as an operator, we need to check
+        // for it
+        for (int index = 0; index < uncheckedTokenArray.length; index++) {
+            if (index > 0) {
+                // Two consecutive operators test
+                if (uncheckedTokenArray[index].equals("-") && isOperator(uncheckedTokenArray[index - 1])) {
+                    uncheckedTokenArray[index] = "";
+                    uncheckedTokenArray[index + 1] = "-" + uncheckedTokenArray[index + 1];
+                    // Current token is obsolete
+                    continue;
+                }
+            }
+            if (index == 0) {
+                // '-' at start test
+                if (uncheckedTokenArray[index].equals("-")) {
+                    uncheckedTokenArray[index + 1] = "-" + uncheckedTokenArray[index + 1];
+                    // Current token is obsolete
+                    checkedTokensList.add(uncheckedTokenArray[index]);
+                    continue;
+                }
+            }
+            checkedTokensList.add(uncheckedTokenArray[index]);
+        }
+        return checkedTokensList.toArray(new String[0]);
+    }
+
+    String removeAllSpaces(String input) {
+        for (int i = 0; i < input.length(); i++) {
+            if (input.charAt(i) == ' ') {
+                input = new StringBuilder(input).deleteCharAt(i).toString();
+            }
+        }
+        return input;
     }
 }

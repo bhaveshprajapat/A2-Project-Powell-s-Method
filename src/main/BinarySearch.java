@@ -4,6 +4,7 @@ public class BinarySearch extends LinMin {
     // binary search in one dimension
     @Override
     void startSearch() throws EvaluationException {
+        Function function = new Function();
         Coordinate PreviousCoordinate = getStartPoint();
         int BoundaryRestriction = 1;
         while (true) {
@@ -21,9 +22,9 @@ public class BinarySearch extends LinMin {
             double upperBoundaryYValue = PreviousCoordinate.getYValue() + vectorY * (getBounds() / (BoundaryRestriction));
             Coordinate upperBoundary = new Coordinate(upperBoundaryXValue, upperBoundaryYValue);
             // All three coordinates are evaluated
-            double zOFUpperBound = Function.outputFOfXY(upperBoundary);
-            double zOFLowerBound = Function.outputFOfXY(lowerBoundary);
-            double zOfCurrentPoint = Function.outputFOfXY(getStartPoint());
+            double zOFUpperBound = function.outputFOfXY(upperBoundary);
+            double zOFLowerBound = function.outputFOfXY(lowerBoundary);
+            double zOfCurrentPoint = function.outputFOfXY(getStartPoint());
             // Shifts upper bound if its output is highest
             if ((zOFUpperBound > zOfCurrentPoint)
                     && (zOFUpperBound > zOFLowerBound)) {
@@ -41,7 +42,7 @@ public class BinarySearch extends LinMin {
                     (upperBoundary.getXValue() + lowerBoundary.getXValue()) / 2,
                     (upperBoundary.getYValue() + lowerBoundary.getYValue()) / 2);
             // When the current direction is optimised within the bounds, log it and change the direction
-            if (Math.abs(Function.outputFOfXY(midpoint) - Function.outputFOfXY(PreviousCoordinate))
+            if (Math.abs(function.outputFOfXY(midpoint) - function.outputFOfXY(PreviousCoordinate))
                     < getTolerance()) {
                 setFinalCoordinate(midpoint);
                 return;

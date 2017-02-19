@@ -8,6 +8,7 @@ import java.util.ArrayList;
  */
 public class PowellMethod extends Thread implements Serializable {
     private static final long serialVersionUID = -4101739456805897681L;
+    private String function;
     private double Tolerance;
     private double Bounds;
     private Coordinate StartPoint;
@@ -19,9 +20,7 @@ public class PowellMethod extends Thread implements Serializable {
     private ArrayList<Coordinate> UnitVectorSearchList = new ArrayList<>();
     private ArrayList<Coordinate> ConjugateDirectionSearchList = new ArrayList<>();
     private Coordinate finalCoordinate;
-    private String function;
     private transient ConjugateDirectionSearch conjugateDirectionSearch;
-
     // Class constructor
     public PowellMethod(double tolerance, double bounds, Coordinate startPoint, SearchMethod searchMethod, String function) {
         Tolerance = tolerance;
@@ -68,6 +67,7 @@ public class PowellMethod extends Thread implements Serializable {
     // start method for powell method search that overrides start in java.lang.Thread
     @Override
     public synchronized void start() {
+        Function function = new Function();
         super.start();
         // declare and initialise variables where necessary
         int Iterations = 0;
@@ -101,7 +101,7 @@ public class PowellMethod extends Thread implements Serializable {
             Coordinate current = getLinMin().getFinalCoordinate();
             // calculates tolerance in case we're already at minimum
             try {
-                if (Math.abs(Function.outputFOfXY(last) - Function.outputFOfXY(current))
+                if (Math.abs(function.outputFOfXY(last) - function.outputFOfXY(current))
                         < getTolerance()) {
                     break;
                 } else {
