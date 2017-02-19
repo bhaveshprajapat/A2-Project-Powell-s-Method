@@ -1,4 +1,5 @@
 package main;
+
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -14,6 +15,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.FutureTask;
+
 @SuppressWarnings("unchecked")
 public class MainSceneController {
     @FXML
@@ -41,6 +43,7 @@ public class MainSceneController {
     private PowellMethod runResult;
     private PowellMethod loadedResult;
     private PowellMethod powellMethod;
+
     public void setBinarySearchMode(ActionEvent actionEvent) {
         /*
             Switches the search mode to Binary
@@ -49,6 +52,7 @@ public class MainSceneController {
         AlgorithmToUse = SearchMethod.binarySearch;
         searchAlgorithmIndicator.setText("Binary Search");
     }
+
     public void setGoldenSectionSearchMode(ActionEvent actionEvent) {
         /*
             Switches the search mode to Golden Section
@@ -57,6 +61,7 @@ public class MainSceneController {
         AlgorithmToUse = SearchMethod.goldenSectionSearch;
         searchAlgorithmIndicator.setText("Golden Section Search");
     }
+
     public void saveThisSetOfResults(ActionEvent actionEvent) {
         /*
             Saves the set of results from the last run made in this session
@@ -99,6 +104,7 @@ public class MainSceneController {
             }
         }
     }
+
     public void loadResultsFromFile(ActionEvent actionEvent) {
         // Un-grey out the graph
         mainSceneGraph.setOpacity(1);
@@ -135,6 +141,7 @@ public class MainSceneController {
             IOAlert.show();
         }
     }
+
     public void loadTheseResultsInNewWindow(ActionEvent actionEvent) {
         // Un-grey out the graph
         mainSceneGraph.setOpacity(1);
@@ -147,6 +154,7 @@ public class MainSceneController {
         // Calls method to open a new graph in a new window with this data
         createSeriesAndDrawGraph(regularSearchList, finalCoordinate, vectorSearchList, "Insert func");
     }
+
     public void loadResultsFromFileInNewWindow(ActionEvent actionEvent) {
         PowellMethod results = null;
         FileChooser fileChooser = new FileChooser();
@@ -184,6 +192,7 @@ public class MainSceneController {
             //TODO write handling code
         }
     }
+
     public void onRunButtonClicked(ActionEvent actionEvent) {
         if (powellMethod != null) {
             if (powellMethod.isAlive()) {
@@ -259,6 +268,7 @@ public class MainSceneController {
         }, null);
         Platform.runLater(UIUpdate);
     }
+
     // Updates the graph in the main window with the result
     private void updateGraphInMainWindow(PowellMethod result) {
         Coordinate finalCoordinate = result.getFinalCoordinate();
@@ -293,6 +303,7 @@ public class MainSceneController {
         finalCoordinateSeries.setName("Final Coordinate");
         mainSceneGraph.getData().add(finalCoordinateSeries);
     }
+
     // Converts an ArrayList to a Scatter Chart Series
     private ScatterChart.Series<Number, Number> createSeriesFromArrayList(ArrayList<Coordinate> ArrayListToConvert) {
         ScatterChart.Series<Number, Number> objectToReturn = new ScatterChart.Series();
@@ -306,6 +317,7 @@ public class MainSceneController {
         }
         return objectToReturn;
     }
+
     private void createSeriesAndDrawGraph(ArrayList<Coordinate> ArrayListForSeries1,
                                           Coordinate finalCoordinate,
                                           ArrayList<Coordinate> ArrayListForSeries3, String function) {
@@ -346,6 +358,7 @@ public class MainSceneController {
         conjugateDirecrtionSearchChartSeries.setName("Conjugate Direcion Search Data");
         displayGraph(finalCoordinate, function, UnitVectorSearchChartSeries, finalCoordinateChartSeries, conjugateDirecrtionSearchChartSeries);
     }
+
     // displays the parameters on the main window's graph
     private void displayGraph(Coordinate finalCoordinate, String function, ScatterChart.Series... ScatterChartSeries) {
         NumberAxis xAxis = new NumberAxis();
@@ -373,30 +386,37 @@ public class MainSceneController {
             }
         }
     }
+
     // loaded result getter
     private PowellMethod getLoadedResult() {
         return loadedResult;
     }
+
     // loaded result setter
     private void setLoadedResult(PowellMethod loadedResult) {
         this.loadedResult = loadedResult;
     }
+
     // run result getter
     private PowellMethod getRunResult() {
         return runResult;
     }
+
     // run result setter
     private void setRunResult(PowellMethod runResult) {
         this.runResult = runResult;
     }
+
     //Changes the function text field to the Booth function
     public void setToBoothFunction(ActionEvent actionEvent) {
         functionTextField.setText("(x+2*y-7)^2 + (2*x+y-5)^2");
     }
+
     //Changes the function text field to the Matyas function
     public void setToMatyasFunction(ActionEvent actionEvent) {
         functionTextField.setText("0.26*(x^2 + y^2) - 0.48*x*y");
     }
+
     public void twoDimensionalGraphMode(ActionEvent actionEvent) {
         mainSceneGraph.getData().clear();
         try {
@@ -406,49 +426,61 @@ public class MainSceneController {
             // TODO create handling code
         }
     }
+
     //Changes the function text field to the McCormick function
     public void setToMcCormickFunction() {
         functionTextField.setText("(x+y)s1 + (x-y)^2 -1.5*x+2.5*y+1");
     }
+
     //Changes the function text field to the Levi function
     public void setToLeviFunctionN13() {
         functionTextField.setText("(3*p*x)s2+((x-1)^2)*(1+(3*p*y)s2)+((y-1)^2)*(1+(2*p*y)s2)");
     }
+
     //adds sin to the text field
     public void addSin(ActionEvent actionEvent) {
         functionTextField.setText(functionTextField.getText() + "()s1");
     }
+
     //adds cos to the text field
     public void AddCos(ActionEvent actionEvent) {
         functionTextField.setText(functionTextField.getText() + "()c1");
     }
+
     // adds tan to the text field
     public void AddTan(ActionEvent actionEvent) {
         functionTextField.setText(functionTextField.getText() + "()t1");
     }
+
     // adds sin2 to the text field
     public void addSinSquared(ActionEvent actionEvent) {
         functionTextField.setText(functionTextField.getText() + "()s2");
     }
+
     // adds cos2 to the function text field
     public void addCosSquared(ActionEvent actionEvent) {
         functionTextField.setText(functionTextField.getText() + "()c2");
     }
+
     // adds tan2 to the function text field
     public void addTanSquared(ActionEvent actionEvent) {
         functionTextField.setText(functionTextField.getText() + "");
     }
+
     // adds e to the function text field
     public void addE(ActionEvent actionEvent) {
         functionTextField.setText(functionTextField.getText() + "e^()");
     }
+
     // adds pi to the function text field
     public void addPi(ActionEvent actionEvent) {
         functionTextField.setText(functionTextField.getText() + "p");
     }
+
     public void closeButtonClicked(ActionEvent actionEvent) {
         System.exit(0);
     }
+
     public void helpButtonClicked(ActionEvent actionEvent) {
         //TODO write some help
     }

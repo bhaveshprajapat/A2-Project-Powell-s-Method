@@ -1,4 +1,5 @@
 package main;
+
 public class BinarySearch extends LinMin {
     // binary search in one dimension
     @Override

@@ -1,4 +1,5 @@
 package main;
+
 /*
     enum to store search direction
  */

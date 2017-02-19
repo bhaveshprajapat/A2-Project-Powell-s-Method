@@ -1,6 +1,8 @@
 package main;
+
 import java.util.ArrayList;
 import java.util.Stack;
+
 // Conjugate direction search class composed in to powell method
 public class ConjugateDirectionSearch {
     private double vectorX, vectorY;
@@ -8,8 +10,10 @@ public class ConjugateDirectionSearch {
     private Coordinate startPoint;
     private ArrayList<Coordinate> conjugateDirectionSearchList = new ArrayList<>();
     private Coordinate finalCoordinate;
+
     public ConjugateDirectionSearch() {
     }
+
     // sets the vectors on the object
     public void setVector(Coordinate one, Coordinate two) {
         double deltaY = two.getYValue() - one.getYValue();
@@ -17,18 +21,23 @@ public class ConjugateDirectionSearch {
         setVectorX(deltaX);
         setVectorY(deltaY);
     }
+
     public double getVectorX() {
         return vectorX;
     }
+
     public void setVectorX(double vectorX) {
         this.vectorX = vectorX;
     }
+
     public double getVectorY() {
         return vectorY;
     }
+
     public void setVectorY(double vectorY) {
         this.vectorY = vectorY;
     }
+
     // begins conjugate direction search
     public void start() throws EvaluationException {
         // Initialise stack and get coordinates from unit vector searches
@@ -74,24 +83,31 @@ public class ConjugateDirectionSearch {
             }
         }
     }
+
     public void setTolerance(double tolerance) {
         this.tolerance = tolerance;
     }
+
     public void setStartPoint(Coordinate startPoint) {
         this.startPoint = startPoint;
     }
+
     public double getBounds() {
         return bounds;
     }
+
     public void setBounds(double bounds) {
         this.bounds = bounds;
     }
+
     public ArrayList<Coordinate> getConjugateDirectionSearchList() {
         return conjugateDirectionSearchList;
     }
+
     public Coordinate getFinalCoordinate() {
         return finalCoordinate;
     }
+
     public void setFinalCoordinate(Coordinate finalCoordinate) {
         this.finalCoordinate = finalCoordinate;
     }
