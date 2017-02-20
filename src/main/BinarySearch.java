@@ -14,12 +14,12 @@ public class BinarySearch extends LinMin {
             vectorX = OptimisingByX ? 1 : 0;
             vectorY = OptimisingByX ? 0 : 1;
             // Creates lower boundary
-            double lowerBoundaryXValue = PreviousCoordinate.getXValue() - vectorX * (getBounds() / (BoundaryRestriction));
-            double lowerBoundaryYValue = PreviousCoordinate.getYValue() - vectorY * (getBounds() / (BoundaryRestriction));
+            double lowerBoundaryXValue = PreviousCoordinate.getXValue() - (vectorX * (getBounds() / (BoundaryRestriction)));
+            double lowerBoundaryYValue = PreviousCoordinate.getYValue() - (vectorY * (getBounds() / (BoundaryRestriction)));
             Coordinate lowerBoundary = new Coordinate(lowerBoundaryXValue, lowerBoundaryYValue);
             // Creates upper boundary
-            double upperBoundaryXValue = PreviousCoordinate.getXValue() + vectorX * (getBounds() / (BoundaryRestriction));
-            double upperBoundaryYValue = PreviousCoordinate.getYValue() + vectorY * (getBounds() / (BoundaryRestriction));
+            double upperBoundaryXValue = PreviousCoordinate.getXValue() + (vectorX * (getBounds() / (BoundaryRestriction)));
+            double upperBoundaryYValue = PreviousCoordinate.getYValue() + (vectorY * (getBounds() / (BoundaryRestriction)));
             Coordinate upperBoundary = new Coordinate(upperBoundaryXValue, upperBoundaryYValue);
             // All three coordinates are evaluated
             double zOFUpperBound = function.outputFOfXY(upperBoundary);

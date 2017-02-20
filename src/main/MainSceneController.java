@@ -2,7 +2,6 @@ package main;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.Scene;
 import javafx.scene.chart.NumberAxis;
@@ -16,29 +15,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.FutureTask;
 
-@SuppressWarnings("unchecked")
 public class MainSceneController {
-    @FXML
     public ProgressIndicator progressIndicator;
-    @FXML
-    public ScatterChart mainSceneGraph;
-    @FXML
+    public ScatterChart<Number, Number> mainSceneGraph;
     public SplitPane splitPane;
-    @FXML
     public TextField functionTextField;
-    @FXML
     public TextField startPointXTextField;
-    @FXML
     public TextField startPointYTextField;
-    @FXML
     public TextField toleranceTextField;
-    @FXML
     public TextField boundsTextField;
-    @FXML
     public Label searchAlgorithmIndicator;
-    @FXML
     public CheckBox clearExistingDataCheckbox;
-    @FXML
     private SearchMethod AlgorithmToUse = SearchMethod.binarySearch;
     private PowellMethod runResult;
     private PowellMethod loadedResult;
@@ -306,7 +293,7 @@ public class MainSceneController {
         ScatterChart.Data<Number, Number> finalCoordinateData = new ScatterChart.Data<>();
         finalCoordinateData.setXValue(finalCoordinate.getXValue());
         finalCoordinateData.setYValue(finalCoordinate.getYValue());
-        ScatterChart.Series finalCoordinateSeries = new ScatterChart.Series();
+        ScatterChart.Series<Number, Number> finalCoordinateSeries = new ScatterChart.Series<>();
         finalCoordinateSeries.getData().add(finalCoordinateData);
         finalCoordinateSeries.setName("Final Coordinate");
         mainSceneGraph.getData().add(finalCoordinateSeries);
@@ -314,7 +301,7 @@ public class MainSceneController {
 
     // Converts an ArrayList to a Scatter Chart Series
     private ScatterChart.Series<Number, Number> createSeriesFromArrayList(ArrayList<Coordinate> ArrayListToConvert) {
-        ScatterChart.Series<Number, Number> objectToReturn = new ScatterChart.Series();
+        ScatterChart.Series<Number, Number> objectToReturn = new ScatterChart.Series<Number, Number>();
         for (Coordinate loopCoordinate : ArrayListToConvert) {
             if (loopCoordinate != null) {
                 ScatterChart.Data<Number, Number> vectorLineSearchData = new ScatterChart.Data<>();
@@ -330,7 +317,7 @@ public class MainSceneController {
                                           Coordinate finalCoordinate,
                                           ArrayList<Coordinate> ArrayListForSeries3, String function) {
         // Series 1: UnitVector Search
-        ScatterChart.Series UnitVectorSearchChartSeries = new ScatterChart.Series();
+        ScatterChart.Series<Number, Number> UnitVectorSearchChartSeries = new ScatterChart.Series();
         UnitVectorSearchChartSeries.setName("Regular Search Data");
         ScatterChart.Data<Number, Number> scatterData;
         for (Coordinate loopCoordinate : ArrayListForSeries1) {
@@ -342,7 +329,7 @@ public class MainSceneController {
             }
         }
         // Series 2 : final coordinate
-        ScatterChart.Series finalCoordinateChartSeries = new ScatterChart.Series();
+        ScatterChart.Series<Number, Number> finalCoordinateChartSeries = new ScatterChart.Series();
         double finalX = finalCoordinate.getXValue();
         double finalY = finalCoordinate.getYValue();
         ScatterChart.Data<Number, Number> finalData;
@@ -354,7 +341,7 @@ public class MainSceneController {
             finalCoordinateChartSeries.getData().add(finalData);
         }
         // Series 3: Conjugate Direction search data
-        ScatterChart.Series conjugateDirecrtionSearchChartSeries = new ScatterChart.Series();
+        ScatterChart.Series<Number, Number> conjugateDirecrtionSearchChartSeries = new ScatterChart.Series<Number, Number>();
         for (Coordinate loopCoordinate : ArrayListForSeries3) {
             if (loopCoordinate != null) {
                 ScatterChart.Data<Number, Number> vectorLineSearchData = new ScatterChart.Data<>();

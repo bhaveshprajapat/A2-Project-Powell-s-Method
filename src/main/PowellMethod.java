@@ -13,14 +13,15 @@ public class PowellMethod extends Thread implements Serializable {
     private double Bounds;
     private Coordinate StartPoint;
     //TODO implement fatal exception handler in UI thread
-    private boolean Completed = false;
-    private boolean FatalExceptionOccurred = false;
-    private boolean FatalErrorOccurred = false;
+    private boolean Completed;
+    private boolean FatalExceptionOccurred;
+    private boolean FatalErrorOccurred;
     private transient LinMin linMin;
     private ArrayList<Coordinate> UnitVectorSearchList = new ArrayList<>();
     private ArrayList<Coordinate> ConjugateDirectionSearchList = new ArrayList<>();
     private Coordinate finalCoordinate;
     private transient ConjugateDirectionSearch conjugateDirectionSearch;
+
     // Class constructor
     public PowellMethod(double tolerance, double bounds, Coordinate startPoint, SearchMethod searchMethod, String function) {
         Tolerance = tolerance;
@@ -133,6 +134,7 @@ public class PowellMethod extends Thread implements Serializable {
             getConjugateDirectionSearch().start();
             setConjugateDirectionSearchList(getConjugateDirectionSearch().getConjugateDirectionSearchList());
             setFinalCoordinate(getConjugateDirectionSearch().getFinalCoordinate());
+
             System.out.println(getFinalCoordinate().toString());
             setCompleted(true);
         } catch (EvaluationException e) {
