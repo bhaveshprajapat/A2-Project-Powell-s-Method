@@ -40,6 +40,9 @@ public class ConjugateDirectionSearch {
 
     // begins conjugate direction search
     public void start() throws EvaluationException {
+        if (Thread.currentThread().isInterrupted()) {
+            return;
+        }
         Function function = new Function();
         // Initialise stack and get coordinates from unit vector searches
         Stack<Coordinate> localCoordinateStack = new Stack<>();
@@ -50,6 +53,9 @@ public class ConjugateDirectionSearch {
         localCoordinateStack.add(startPoint);
         int boundsTightener = 1;
         while (true) {
+            if (Thread.currentThread().isInterrupted()) {
+                return;
+            }
             Coordinate upperBounds = new Coordinate(
                     localCoordinateStack.peek().getXValue() + (getVectorX() * (getBounds() / boundsTightener)),
                     localCoordinateStack.peek().getYValue() + (getVectorY() * (getBounds() / boundsTightener)));

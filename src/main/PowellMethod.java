@@ -1,5 +1,7 @@
 package main;
 
+import javafx.concurrent.Service;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -8,26 +10,26 @@ import java.util.ArrayList;
  */
 public class PowellMethod extends Thread implements Serializable {
     private static final long serialVersionUID = -4101739456805897681L;
-    private String function;
+    private Function function;
     private double Tolerance;
     private double Bounds;
     private Coordinate StartPoint;
     //TODO implement fatal exception handler in UI thread
     private boolean Completed;
     private boolean FatalExceptionOccurred;
-    private boolean FatalErrorOccurred;
     private transient LinMin linMin;
     private ArrayList<Coordinate> UnitVectorSearchList = new ArrayList<>();
     private ArrayList<Coordinate> ConjugateDirectionSearchList = new ArrayList<>();
     private Coordinate finalCoordinate;
     private transient ConjugateDirectionSearch conjugateDirectionSearch;
+    private transient Service logBoxUpdaterService;
 
     // Class constructor
-    public PowellMethod(double tolerance, double bounds, Coordinate startPoint, SearchMethod searchMethod, String function) {
+    public PowellMethod(double tolerance, double bounds, Coordinate startPoint, SearchMethod searchMethod, Service logBoxUpdaterService) {
         Tolerance = tolerance;
         Bounds = bounds;
         StartPoint = startPoint;
-        this.function = function;
+        function = new Function();
         // initialise linMin with the correct search method
         switch (searchMethod) {
             case binarySearch:
@@ -38,6 +40,8 @@ public class PowellMethod extends Thread implements Serializable {
                 break;
         }
         setConjugateDirectionSearch(new ConjugateDirectionSearch());
+        this.logBoxUpdaterService = logBoxUpdaterService;
+
     }
 
     //Getter method for conjugate direction search
@@ -55,6 +59,12 @@ public class PowellMethod extends Thread implements Serializable {
         return Tolerance;
     }
 
+    @Override
+    public void interrupt() {
+        super.interrupt();
+        setFatalExceptionOccured();
+    }
+
     // getter for bounds
     public double getBounds() {
         return Bounds;
@@ -68,8 +78,11 @@ public class PowellMethod extends Thread implements Serializable {
     // start method for powell method search that overrides start in java.lang.Thread
     @Override
     public synchronized void start() {
-        Function function = new Function();
+        MainSceneController.setLogBoxUpdateText("Initialised, beginning search");
+        logBoxUpdaterService.start();
         super.start();
+        MainSceneController.setLogBoxUpdateText("Beginning Unit Vector Search...");
+        logBoxUpdaterService.restart();
         // declare and initialise variables where necessary
         int Iterations = 0;
         boolean optimisingByX, initialRun;
@@ -80,20 +93,33 @@ public class PowellMethod extends Thread implements Serializable {
         getUnitVectorSearchList().add(getStartPoint());
         // loop over linmin
         while (true) {
+            if (Thread.currentThread().isInterrupted()) {
+                return;
+            }
             // Set up the linmin object
             ListSize = getUnitVectorSearchList().size();
-            getLinMin().setStartPoint(initialRun ? getStartPoint() : getUnitVectorSearchList().get(ListSize - 1));
+            if (initialRun) {
+                getLinMin().setStartPoint(getStartPoint());
+            } else {
+                getLinMin().setStartPoint(getUnitVectorSearchList().get(ListSize - 1));
+            }
             getLinMin().setTolerance(getTolerance());
             getLinMin().setBounds(getBounds());
-            getLinMin().setSearchDirection(optimisingByX ? SearchDirection.Vector_I : SearchDirection.Vector_J);
+            if (optimisingByX) {
+                getLinMin().setSearchDirection(SearchDirection.Vector_I);
+            } else {
+                getLinMin().setSearchDirection(SearchDirection.Vector_J);
+            }
             // Execute linmin
             try {
                 getLinMin().startSearch();
             } catch (EvaluationException e) {
                 // If anything adverse occurs, exit the thread
-                setFatalErrorOccured();
+                setFatalExceptionOccured();
                 return;
             }
+            MainSceneController.setLogBoxUpdateText("Optimised by " + getLinMin().getSearchDirection() + " to: " + getLinMin().getFinalCoordinate().toString());
+            logBoxUpdaterService.restart();
             // Adds linmin result to list
             getUnitVectorSearchList().add(getLinMin().getFinalCoordinate());
             ListSize = getUnitVectorSearchList().size();
@@ -102,8 +128,8 @@ public class PowellMethod extends Thread implements Serializable {
             Coordinate current = getLinMin().getFinalCoordinate();
             // calculates tolerance in case we're already at minimum
             try {
-                if (Math.abs(function.outputFOfXY(last) - function.outputFOfXY(current))
-                        < getTolerance()) {
+                if ((Math.abs(function.outputFOfXY(last) - function.outputFOfXY(current))
+                        < getTolerance()) && (Iterations > 2)) {
                     break;
                 } else {
                     // run another optmisation
@@ -113,7 +139,7 @@ public class PowellMethod extends Thread implements Serializable {
                 }
             } catch (EvaluationException e) {
                 // some fatal error occured
-                setFatalErrorOccured();
+                setFatalExceptionOccured();
                 setCompleted(false);
                 return;
             }
@@ -122,6 +148,8 @@ public class PowellMethod extends Thread implements Serializable {
                 break;
             }
         }
+        MainSceneController.setLogBoxUpdateText("Beginning conjugate direction search...");
+        logBoxUpdaterService.restart();
         // initialise conjugate direction search
         getConjugateDirectionSearch().setStartPoint(getUnitVectorSearchList().get(getUnitVectorSearchList().size() - 1));
         Coordinate lastPoint = getUnitVectorSearchList().get(getUnitVectorSearchList().size() - 1);
@@ -134,12 +162,9 @@ public class PowellMethod extends Thread implements Serializable {
             getConjugateDirectionSearch().start();
             setConjugateDirectionSearchList(getConjugateDirectionSearch().getConjugateDirectionSearchList());
             setFinalCoordinate(getConjugateDirectionSearch().getFinalCoordinate());
-
-            System.out.println(getFinalCoordinate().toString());
             setCompleted(true);
         } catch (EvaluationException e) {
             // catch any errors that occur during running
-            setFatalErrorOccured();
             setFatalExceptionOccured();
             setConjugateDirectionSearchList(getConjugateDirectionSearch().getConjugateDirectionSearchList());
             setConjugateDirectionSearch(null);
@@ -151,17 +176,8 @@ public class PowellMethod extends Thread implements Serializable {
         Completed = completed;
     }
 
-    // fatal error boolean setter
-    public void setFatalErrorOccured() {
-        FatalErrorOccurred = true;
-    }
-
     public ArrayList<Coordinate> getUnitVectorSearchList() {
         return UnitVectorSearchList;
-    }
-
-    public void setUnitVectorSearchList(ArrayList<Coordinate> unitVectorSearchList) {
-        UnitVectorSearchList = unitVectorSearchList;
     }
 
     // getter for conjugate direction search list
@@ -186,7 +202,7 @@ public class PowellMethod extends Thread implements Serializable {
 
     // fatal exception boolean setter
     public void setFatalExceptionOccured() {
-        FatalExceptionOccurred = true;
+        setFatalExceptionOccurred(true);
     }
 
     // getter for final coordinate
@@ -200,7 +216,15 @@ public class PowellMethod extends Thread implements Serializable {
     }
 
     // getter for function
-    public String getFunction() {
-        return function;
+    public String getFunctionString() {
+        return function.getInfixExpression();
+    }
+
+    public boolean isFatalExceptionOccurred() {
+        return FatalExceptionOccurred;
+    }
+
+    public void setFatalExceptionOccurred(boolean fatalExceptionOccurred) {
+        FatalExceptionOccurred = fatalExceptionOccurred;
     }
 }

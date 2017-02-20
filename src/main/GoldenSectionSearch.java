@@ -6,7 +6,7 @@ public class GoldenSectionSearch extends LinMin {
         Function function = new Function();
         boolean optimisingByX = (getSearchDirection() == SearchDirection.Vector_I);
         double previousZValue = function.outputFOfXY(getStartPoint());
-        int vectorX = (getSearchDirection() == SearchDirection.Vector_J) ? 1 : 0;
+        int vectorX = (getSearchDirection() == SearchDirection.Vector_I) ? 1 : 0;
         int vectorY = (getSearchDirection() == SearchDirection.Vector_J) ? 1 : 0;
         double lowerBoundaryXValue = getStartPoint().getXValue() - (vectorX * (getBounds()));
         double lowerBoundaryYValue = getStartPoint().getYValue() - (vectorY * (getBounds()));
@@ -25,6 +25,7 @@ public class GoldenSectionSearch extends LinMin {
                     optimisingByX ? (lowerBound.getXValue() + ((upperBound.getXValue() - lowerBound.getXValue()) / tau)) : lowerBound.getXValue(),
                     optimisingByX ? lowerBound.getYValue() : (lowerBound.getYValue() + ((upperBound.getYValue() - lowerBound.getYValue()) / tau)));
             // Evaluate each golden section coordinate
+            // Evaluate each golden section coordinate
             double zOfGoldenSection1 = function.outputFOfXY(goldenSection1);
             double zOfGoldenSection2 = function.outputFOfXY(goldenSection2);
             Coordinate newLowerBound, newUpperBound;
@@ -38,7 +39,7 @@ public class GoldenSectionSearch extends LinMin {
                 newUpperBound = new Coordinate(upperBound.getXValue(), upperBound.getYValue());
             }
             // Finds and creates the midpoint
-            Coordinate midpoint = new Coordinate((lowerBound.getXValue() + upperBound.getXValue()) / 2, (lowerBound.getYValue() + upperBound.getYValue()) / 2);
+            Coordinate midpoint = new Coordinate((newLowerBound.getXValue() + newUpperBound.getXValue()) / 2, (newLowerBound.getYValue() + newUpperBound.getYValue()) / 2);
         /*
             If a previous z value is provided, evaluate the tolerance and exit if the tolerance is met
             Otherwise, recurse this function with restricted bounds

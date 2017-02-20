@@ -1,12 +1,15 @@
 package main;
 
 import javafx.application.Platform;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.geometry.Side;
 import javafx.scene.Scene;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.ScatterChart;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -16,6 +19,7 @@ import java.util.List;
 import java.util.concurrent.FutureTask;
 
 public class MainSceneController {
+    private static volatile String logBoxUpdateText;
     public ProgressIndicator progressIndicator;
     public ScatterChart<Number, Number> mainSceneGraph;
     public SplitPane splitPane;
@@ -26,10 +30,15 @@ public class MainSceneController {
     public TextField boundsTextField;
     public Label searchAlgorithmIndicator;
     public CheckBox clearExistingDataCheckbox;
+    public TextArea logTextArea;
     private SearchMethod AlgorithmToUse = SearchMethod.binarySearch;
     private PowellMethod runResult;
     private PowellMethod loadedResult;
     private PowellMethod powellMethod;
+
+    public static void setLogBoxUpdateText(String logBoxUpdateText) {
+        MainSceneController.logBoxUpdateText = logBoxUpdateText;
+    }
 
     public void setBinarySearchMode(ActionEvent actionEvent) {
         /*
@@ -135,11 +144,11 @@ public class MainSceneController {
         /*
             Loads the coordinate list from the loaded result
          */
-        ArrayList<Coordinate> regularSearchList = getLoadedResult().getUnitVectorSearchList();
+        ArrayList<Coordinate> unitVectorSearchList = getLoadedResult().getUnitVectorSearchList();
         Coordinate finalCoordinate = getLoadedResult().getFinalCoordinate();
-        ArrayList<Coordinate> vectorSearchList = getLoadedResult().getConjugateDirectionSearchList();
+        ArrayList<Coordinate> conjugateDirectionSearchList = getLoadedResult().getConjugateDirectionSearchList();
         // Calls method to open a new graph in a new window with this data
-        createSeriesAndDrawGraph(regularSearchList, finalCoordinate, vectorSearchList, "Insert func");
+        createSeriesAndDrawGraph(unitVectorSearchList, finalCoordinate, conjugateDirectionSearchList, "Insert func");
     }
 
     public void loadResultsFromFileInNewWindow(ActionEvent actionEvent) {
@@ -165,13 +174,13 @@ public class MainSceneController {
                     }
                     if (results != null) {
                         progressIndicator.setProgress(1);
-                        // Series 1: RegularSearchArrayList
-                        ArrayList<Coordinate> regArrayList = results.getUnitVectorSearchList();
+                        // Series 1: UnitVectorSearchArrayList
+                        ArrayList<Coordinate> unitVectorSearchList = results.getUnitVectorSearchList();
                         // Series 2 : final coordinate
                         Coordinate finalCoordinate = results.getFinalCoordinate();
-                        // Series 3: VLS search data
-                        ArrayList<Coordinate> vlsCoordinateList = results.getUnitVectorSearchList();
-                        createSeriesAndDrawGraph(regArrayList, finalCoordinate, vlsCoordinateList, "insert func");
+                        // Series 3: conjugate direction search data
+                        ArrayList<Coordinate> conjugateDirectionSearchCoordinateList = results.getUnitVectorSearchList();
+                        createSeriesAndDrawGraph(unitVectorSearchList, finalCoordinate, conjugateDirectionSearchCoordinateList, "insert func");
                     }
                 }
             }
@@ -185,6 +194,7 @@ public class MainSceneController {
         if (powellMethod != null) {
             if (powellMethod.isAlive()) {
                 powellMethod.interrupt();
+                return;
             }
         }
         mainSceneGraph.opacityProperty().setValue(100);
@@ -242,7 +252,6 @@ public class MainSceneController {
             badFunction.show();
             return;
         } catch (EvaluationException e) {
-            // TODO integrate logger?
             FutureTask<Void> errorDialog = new FutureTask<>(() -> {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Evaluation Exception");
@@ -254,12 +263,34 @@ public class MainSceneController {
             Platform.runLater(errorDialog);
         }
         Coordinate startCoordinate = new Coordinate(startPointX, startPointY);
-        powellMethod = new PowellMethod(tolerance, bounds, startCoordinate, AlgorithmToUse, functionTextField.getText());
+        Service logBoxUpdaterService = new Service() {
+            @Override
+            protected Task createTask() {
+                return new Task() {
+                    @Override
+                    protected Object call() throws Exception {
+                        logTextArea.setText(logTextArea.getText() + System.getProperty("line.separator") + MainSceneController.logBoxUpdateText);
+                        return null;
+                    }
+                };
+            }
+        };
+        if (clearExistingDataCheckbox.isSelected()) {
+            mainSceneGraph.getData().clear();
+        }
+        powellMethod = new PowellMethod(tolerance, bounds, startCoordinate, AlgorithmToUse, logBoxUpdaterService);
         powellMethod.start();
-        setRunResult(powellMethod);
+
         FutureTask<Void> UIUpdate = new FutureTask<>(() -> {
-            progressIndicator.setProgress(1);
-            updateGraphInMainWindow(powellMethod);
+            if (!powellMethod.isFatalExceptionOccurred()) {
+                setRunResult(powellMethod);
+                setLoadedResult(powellMethod);
+                progressIndicator.setProgress(1);
+                updateGraphInMainWindow(powellMethod);
+            } else {
+                setRunResult(null);
+                setLoadedResult(null);
+            }
         }, null);
         Platform.runLater(UIUpdate);
     }
@@ -267,7 +298,7 @@ public class MainSceneController {
     // Updates the graph in the main window with the result
     private void updateGraphInMainWindow(PowellMethod result) {
         Coordinate finalCoordinate = result.getFinalCoordinate();
-        String function = result.getFunction();
+        String function = result.getFunctionString();
         ScatterChart.Series UnitVectorScatterChartSeries = createSeriesFromArrayList(result.getUnitVectorSearchList());
         ScatterChart.Series ConjugateDirectionScatterChartSeries = createSeriesFromArrayList(result.getConjugateDirectionSearchList());
         boolean clearExistingData = clearExistingDataCheckbox.isSelected();
@@ -275,21 +306,10 @@ public class MainSceneController {
         if (clearExistingData) {
             mainSceneGraph.getData().clear();
         }
-        UnitVectorScatterChartSeries.setName("Regular Search Data");
+        UnitVectorScatterChartSeries.setName("Unit Vector Search Data");
         ConjugateDirectionScatterChartSeries.setName("Vector Search Data");
         mainSceneGraph.getData().addAll(UnitVectorScatterChartSeries, ConjugateDirectionScatterChartSeries);
         mainSceneGraph.setTitle("Graph showing path taken to " + finalCoordinate.toString());
-        // Lambda expression sets the click event listener for the graph
-        mainSceneGraph.setOnMouseClicked(event -> {
-            String sep = System.getProperty("line.separator");
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Information about this loaded result");
-            alert.setContentText(
-                    "The function used in this optimisation was:"
-                            + sep + function
-            );
-            alert.show();
-        });
         ScatterChart.Data<Number, Number> finalCoordinateData = new ScatterChart.Data<>();
         finalCoordinateData.setXValue(finalCoordinate.getXValue());
         finalCoordinateData.setYValue(finalCoordinate.getYValue());
@@ -317,8 +337,8 @@ public class MainSceneController {
                                           Coordinate finalCoordinate,
                                           ArrayList<Coordinate> ArrayListForSeries3, String function) {
         // Series 1: UnitVector Search
-        ScatterChart.Series<Number, Number> UnitVectorSearchChartSeries = new ScatterChart.Series();
-        UnitVectorSearchChartSeries.setName("Regular Search Data");
+        ScatterChart.Series<Number, Number> UnitVectorSearchChartSeries = new ScatterChart.Series<Number, Number>();
+        UnitVectorSearchChartSeries.setName("Unit Vector Search Data");
         ScatterChart.Data<Number, Number> scatterData;
         for (Coordinate loopCoordinate : ArrayListForSeries1) {
             if (loopCoordinate != null) {
@@ -329,7 +349,7 @@ public class MainSceneController {
             }
         }
         // Series 2 : final coordinate
-        ScatterChart.Series<Number, Number> finalCoordinateChartSeries = new ScatterChart.Series();
+        ScatterChart.Series<Number, Number> finalCoordinateChartSeries = new ScatterChart.Series<Number, Number>();
         double finalX = finalCoordinate.getXValue();
         double finalY = finalCoordinate.getYValue();
         ScatterChart.Data<Number, Number> finalData;
@@ -350,7 +370,7 @@ public class MainSceneController {
                 conjugateDirecrtionSearchChartSeries.getData().add(vectorLineSearchData);
             }
         }
-        conjugateDirecrtionSearchChartSeries.setName("Conjugate Direcion Search Data");
+        conjugateDirecrtionSearchChartSeries.setName("Conjugate Direction Search Data");
         displayGraph(finalCoordinate, function, UnitVectorSearchChartSeries, finalCoordinateChartSeries, conjugateDirecrtionSearchChartSeries);
     }
 
@@ -478,5 +498,26 @@ public class MainSceneController {
 
     public void helpButtonClicked(ActionEvent actionEvent) {
         //TODO write some help
+    }
+
+    public void onGraphClicked(MouseEvent mouseEvent) {
+        if (getLoadedResult() != null) {
+            String sep = System.getProperty("line.separator");
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Information about this loaded result");
+            alert.setContentText(
+                    "The function used in this optimisation was:"
+                            + sep + getLoadedResult().getFunctionString()
+            );
+            alert.show();
+        } else {
+            String sep = System.getProperty("line.separator");
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Information");
+            alert.setContentText(
+                    "Click on the graph after running/loading an optimisation to view the function used."
+            );
+            alert.show();
+        }
     }
 }

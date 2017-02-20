@@ -177,6 +177,15 @@
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                     </VBox.margin>
                 </ProgressIndicator>
+                <TextArea fx:id="logTextArea" editable="false" prefHeight="213.0" prefWidth="362.0"
+                          text="Waiting for user action..." wrapText="true" VBox.vgrow="ALWAYS">
+                    <VBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                    </VBox.margin>
+                    <tooltip>
+                        <Tooltip text="This box shows you information about the program in real time. "/>
+                    </tooltip>
+                </TextArea>
 
             </VBox>
         </AnchorPane>
@@ -200,8 +209,8 @@
                               text="Clear Existing Data?"/>
                     <Button mnemonicParsing="false" onAction="#twoDimensionalGraphMode" text="2D Mode"/>
                 </ToolBar>
-                <ScatterChart fx:id="mainSceneGraph" minWidth="0.0" opacity="0.25" title="No results to show"
-                              VBox.vgrow="ALWAYS">
+                <ScatterChart fx:id="mainSceneGraph" minWidth="0.0" onMouseClicked="#onGraphClicked" opacity="0.25"
+                              title="No results to show" VBox.vgrow="ALWAYS">
                     <xAxis>
                         <NumberAxis label="y" side="BOTTOM"/>
                     </xAxis>

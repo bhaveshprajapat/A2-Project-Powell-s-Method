@@ -8,11 +8,22 @@ public class BinarySearch extends LinMin {
         Coordinate PreviousCoordinate = getStartPoint();
         int BoundaryRestriction = 1;
         while (true) {
+            if (Thread.currentThread().isInterrupted()) {
+                return;
+            }
             // Create direction vectors and set their values
             int vectorX, vectorY;
             boolean OptimisingByX = (getSearchDirection() == SearchDirection.Vector_I);
-            vectorX = OptimisingByX ? 1 : 0;
-            vectorY = OptimisingByX ? 0 : 1;
+            if (OptimisingByX) {
+                vectorX = 1;
+            } else {
+                vectorX = 0;
+            }
+            if (OptimisingByX) {
+                vectorY = 0;
+            } else {
+                vectorY = 1;
+            }
             // Creates lower boundary
             double lowerBoundaryXValue = PreviousCoordinate.getXValue() - (vectorX * (getBounds() / (BoundaryRestriction)));
             double lowerBoundaryYValue = PreviousCoordinate.getYValue() - (vectorY * (getBounds() / (BoundaryRestriction)));

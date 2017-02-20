@@ -1,11 +1,13 @@
 package main;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Stack;
 
-class Function {
+class Function implements Serializable {
+    private static final long serialVersionUID = -4936036854404504779L;
     private static String infixExpression;
     private static String postfixExpression;
 
@@ -21,7 +23,6 @@ class Function {
     private String convert(String infix) {
         Stack<String> operatorStack = new Stack<>();
         StringBuilder outputBuilder = new StringBuilder();
-
         infix = removeAllSpaces(infix);
         String[] uncheckedTokens = tokeniseString(infix);
         // Check tokens
