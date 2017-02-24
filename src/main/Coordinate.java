@@ -40,4 +40,10 @@ public class Coordinate implements Serializable {
     public void setYValue(double YValue) {
         this.YValue = YValue;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        Coordinate comparison = (Coordinate) obj;
+        return (comparison.getXValue() == getXValue()) && (comparison.getYValue() == getYValue());
+    }
 }

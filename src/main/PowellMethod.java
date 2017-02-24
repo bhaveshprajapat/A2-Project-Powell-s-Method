@@ -161,6 +161,16 @@ public class PowellMethod extends Thread implements Serializable {
         getExponentialSearch().setTolerance(getTolerance());
         getExponentialSearch().setVector(getUnitVectorSearchList().get(getUnitVectorSearchList().size() - 3), newStartPoint);
         MainSceneController.getLog().add("VECTOR" + getExponentialSearch().getxVector() + " " + getExponentialSearch().getyVector());
+        if (getExponentialSearch().getStartPoint().equals(getStartPoint())) {
+            setFinalCoordinate(getStartPoint());
+            MainSceneController.getLog().add("No conjugate direction optimisation performed, already at minimum.");
+            return;
+        }
+        if ((getExponentialSearch().getxVector() == 0D) && (getExponentialSearch().getyVector() == 0D)) {
+            setFinalCoordinate(getStartPoint());
+            MainSceneController.getLog().add("No conjugate direction optimisation performed, already at minimum.");
+            return;
+        }
         if (stopThreadFlag) {
             return;
         }
