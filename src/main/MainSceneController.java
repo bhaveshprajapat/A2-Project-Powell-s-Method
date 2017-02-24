@@ -1,8 +1,6 @@
 package main;
 
 import javafx.application.Platform;
-import javafx.concurrent.Service;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.geometry.Side;
 import javafx.scene.Scene;
@@ -19,25 +17,25 @@ import java.util.List;
 import java.util.concurrent.FutureTask;
 
 public class MainSceneController {
-    private static volatile String logBoxUpdateText;
+    private static ArrayList<String> log = new ArrayList<>();
     public ProgressIndicator progressIndicator;
     public ScatterChart<Number, Number> mainSceneGraph;
     public SplitPane splitPane;
     public TextField functionTextField;
     public TextField startPointXTextField;
     public TextField startPointYTextField;
-    public TextField toleranceTextField;
     public TextField boundsTextField;
     public Label searchAlgorithmIndicator;
     public CheckBox clearExistingDataCheckbox;
     public TextArea logTextArea;
+    public Slider toleranceSlider;
     private SearchMethod AlgorithmToUse = SearchMethod.binarySearch;
     private PowellMethod runResult;
     private PowellMethod loadedResult;
     private PowellMethod powellMethod;
 
-    public static void setLogBoxUpdateText(String logBoxUpdateText) {
-        MainSceneController.logBoxUpdateText = logBoxUpdateText;
+    public static ArrayList<String> getLog() {
+        return log;
     }
 
     public void setBinarySearchMode(ActionEvent actionEvent) {
@@ -193,7 +191,13 @@ public class MainSceneController {
         Function function = new Function();
         if (powellMethod != null) {
             if (powellMethod.isAlive()) {
-                powellMethod.interrupt();
+                powellMethod.setStopThreadFlag(true);
+                try {
+                    powellMethod.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                powellMethod = null;
                 return;
             }
         }
@@ -206,20 +210,25 @@ public class MainSceneController {
         progressIndicator.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
         // Initialise variables
         function.setInfixExpression(functionTextField.getText());
+        if (functionTextField.getText().equals("")) {
+            Alert BadInputAlert = new Alert(Alert.AlertType.ERROR);
+            BadInputAlert.setTitle("Invalid input in function text field");
+            BadInputAlert.setHeaderText("The function input was not recognised:");
+            BadInputAlert.setContentText("Please revise what is written in the function input field.");
+            BadInputAlert.show();
+            progressIndicator.setProgress(0);
+            return;
+        }
         function.convertInfixToPostfix();
         double startPointX;
         double startPointY;
-        double tolerance;
+        double tolerance = Math.pow(0.1, toleranceSlider.getValue());
         double bounds;
         try {
             startPointX = Double.parseDouble(startPointXTextField.getText());
             startPointY = Double.parseDouble(startPointYTextField.getText());
-            tolerance = Double.parseDouble(toleranceTextField.getText());
             bounds = Double.parseDouble(boundsTextField.getText());
-            if (tolerance == 0D) {
-                throw new NumberFormatException("The tolerance value must be > 0");
-            }
-            if (bounds == 0D) {
+            if (bounds <= 0D) {
                 throw new NumberFormatException("The bounds value must be > 0");
             }
         } catch (NumberFormatException e) {
@@ -262,32 +271,27 @@ public class MainSceneController {
             }, null);
             Platform.runLater(errorDialog);
         }
-        Coordinate startCoordinate = new Coordinate(startPointX, startPointY);
-        Service logBoxUpdaterService = new Service() {
-            @Override
-            protected Task createTask() {
-                return new Task() {
-                    @Override
-                    protected Object call() throws Exception {
-                        logTextArea.setText(logTextArea.getText() + System.getProperty("line.separator") + MainSceneController.logBoxUpdateText);
-                        return null;
-                    }
-                };
-            }
-        };
-        if (clearExistingDataCheckbox.isSelected()) {
-            mainSceneGraph.getData().clear();
-        }
-        powellMethod = new PowellMethod(tolerance, bounds, startCoordinate, AlgorithmToUse, logBoxUpdaterService);
+        powellMethod = new PowellMethod(tolerance, bounds, new Coordinate(startPointX, startPointY), AlgorithmToUse);
         powellMethod.start();
-
         FutureTask<Void> UIUpdate = new FutureTask<>(() -> {
-            if (!powellMethod.isFatalExceptionOccurred()) {
+            if (!powellMethod.isFatalExceptionOccurred() && !powellMethod.isStopThreadFlag()) {
+                if (clearExistingDataCheckbox.isSelected()) {
+                    mainSceneGraph.getData().clear();
+                }
                 setRunResult(powellMethod);
                 setLoadedResult(powellMethod);
                 progressIndicator.setProgress(1);
                 updateGraphInMainWindow(powellMethod);
+                logTextArea.clear();
+                logTextArea.setText("");
+                for (String s : MainSceneController.log) {
+                    logTextArea.setText(s);
+                }
+                powellMethod = null;
             } else {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Optimisation cancelled on user request.");
+                alert.showAndWait();
                 setRunResult(null);
                 setLoadedResult(null);
             }

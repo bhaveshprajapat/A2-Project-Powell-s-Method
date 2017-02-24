@@ -16,6 +16,7 @@ public class Main extends Application {
         Parent root = FXMLLoader.load(getClass().getResource("mainScene.fxml"));
         primaryStage.setTitle("Powell's Conjugate Direction Method");
         primaryStage.setScene(new Scene(root, 900, 475));
+        primaryStage.setMaximized(true);
         primaryStage.show();
     }
 }
