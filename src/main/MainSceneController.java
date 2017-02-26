@@ -209,17 +209,16 @@ public class MainSceneController {
         progressIndicator.setDisable(false);
         progressIndicator.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
         // Initialise variables
-        function.setInfixExpression(functionTextField.getText());
         if (functionTextField.getText().equals("")) {
             Alert BadInputAlert = new Alert(Alert.AlertType.ERROR);
             BadInputAlert.setTitle("Invalid input in function text field");
-            BadInputAlert.setHeaderText("The function input was not recognised:");
-            BadInputAlert.setContentText("Please revise what is written in the function input field.");
+            BadInputAlert.setHeaderText("No entry in the function text field");
+            BadInputAlert.setContentText("The function text field must not be left blank, please revise.");
             BadInputAlert.show();
             progressIndicator.setProgress(0);
             return;
         }
-        function.convertInfixToPostfix();
+        function.setInfixExpression(functionTextField.getText());
         double startPointX;
         double startPointY;
         double tolerance = Math.pow(0.1, toleranceSlider.getValue());

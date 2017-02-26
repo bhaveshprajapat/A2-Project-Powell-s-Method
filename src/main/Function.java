@@ -11,17 +11,12 @@ class Function implements Serializable {
     private static String infixExpression;
     private static String postfixExpression;
 
-    // Calls the object and takes it's infix expression and then stores it's postfix equivalent in the object
-    public void convertInfixToPostfix() {
-        Function.postfixExpression = convertInfixToRPN(Function.infixExpression);
-    }
-
     // Method converts a given string to RPN
-    private String convertInfixToRPN(String infix) {
+    private void convertInfixToRPN() {
         Stack<String> operatorStack = new Stack<>();
         StringBuilder outputBuilder = new StringBuilder();
-        infix = removeAllSpaces(infix);
-        String[] uncheckedTokens = tokeniseString(infix);
+        Function.infixExpression = removeAllSpaces(getInfixExpression());
+        String[] uncheckedTokens = tokeniseString(getInfixExpression());
         // Check tokens
         String[] checkedTokens = checkTokens(uncheckedTokens);
         for (String currentToken : checkedTokens) {
@@ -53,7 +48,7 @@ class Function implements Serializable {
             outputBuilder.append(operatorStack.pop()).append(",");
         }
         String finalResult = outputBuilder.toString();
-        return finalResult.substring(0, finalResult.length() - 1);
+        Function.setPostfixExpression(finalResult.substring(0, finalResult.length() - 1));
     }
 
     // Is the parameterised token a RIGHT PARENTHESIS?
@@ -110,15 +105,15 @@ class Function implements Serializable {
         return stringToTokenise.split("(?<=[-+^*/()])|(?=[-+*/()^])|(?=[a-z])|(?<=.[a-z])|(?<=[a-z])");
     }
 
-    String getPostfixExpression() {
+    private String getPostfixExpression() {
         return Function.postfixExpression;
     }
 
+    public static void setPostfixExpression(String postfixExpression) {
+        Function.postfixExpression = postfixExpression;
+    }
+
     public double evaluate(Coordinate coordinateToUse) throws EvaluationException {
-        // Test if the string is equal to an empty string
-        if (getPostfixExpression().equals("")) {
-            throw new EvaluationException("RPN String cannot be empty");
-        }
         /*
             Work through each token in the array, pushing
             operands to the stack and popping operands if
@@ -157,7 +152,7 @@ class Function implements Serializable {
                             case "e":
                                 numberLeft = Math.E;
                                 break;
-                            case "pi":
+                            case "p":
                                 numberLeft = Math.PI;
                                 break;
                             default:
@@ -226,6 +221,7 @@ class Function implements Serializable {
     // Mutator method for the infix expression
     public void setInfixExpression(String infixExpression) {
         Function.infixExpression = infixExpression;
+        convertInfixToRPN();
     }
 
     // This private method checks a String array and moves minus signs if they are unary
