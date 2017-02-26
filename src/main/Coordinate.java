@@ -1,7 +1,7 @@
 package main;
 
 /*
-    Coordinate class to store coordinates, which are serialisable
+    Custom Coordinate class which stores a corresponding X and Y Value.
  */
 
 import java.io.Serializable;
@@ -11,36 +11,41 @@ public class Coordinate implements Serializable {
     private double XValue;
     private double YValue;
 
+    // Class Constructor
     public Coordinate(double x_Value, double y_Value) {
         XValue = x_Value;
         YValue = y_Value;
     }
 
+    // Returns a String to describe this Coordinate Object
     @Override
     public String toString() {
-        return "X: " + getXValue() + " Y: " + getYValue();
+        return "Coordinate " + hashCode() + "-> X: " + getXValue() + " Y: " + getYValue();
     }
 
-    // x value getter
+    // Accessor method for X Value
     public double getXValue() {
         return XValue;
     }
 
-    // x value setter
+    // Mutator method for X Value
     public void setXValue(double XValue) {
         this.XValue = XValue;
     }
 
-    // y value getter
+    // Accessor method for Y value
     public double getYValue() {
         return YValue;
     }
 
-    // y value setter
+    // Mutator method for Y Value
     public void setYValue(double YValue) {
         this.YValue = YValue;
     }
 
+    /*
+        Overridden method from Object class which allows one Coordinate to be checked for equality of X and Y values with another.
+     */
     @Override
     public boolean equals(Object obj) {
         Coordinate comparison = (Coordinate) obj;

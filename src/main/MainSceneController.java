@@ -248,7 +248,7 @@ public class MainSceneController {
         error in detail.
          */
         try {
-            function.outputFOfXY(new Coordinate(startPointX, startPointY));
+            function.evaluate(new Coordinate(startPointX, startPointY));
         } catch (RuntimeException e) {
             progressIndicator.setProgress(0);
             Alert badFunction = new Alert(Alert.AlertType.ERROR);

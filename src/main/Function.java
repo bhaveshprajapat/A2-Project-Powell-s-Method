@@ -3,24 +3,21 @@ package main;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EmptyStackException;
-import java.util.HashMap;
 import java.util.Stack;
 
 class Function implements Serializable {
-    private static final long serialVersionUID = -4936036854404504779L;
+    // Declare fields
+    private static final long serialVersionUID = -4936036854404504779L; // Necessary for serialisable objects in Java
     private static String infixExpression;
     private static String postfixExpression;
 
+    // Calls the object and takes it's infix expression and then stores it's postfix equivalent in the object
     public void convertInfixToPostfix() {
-        Function.postfixExpression = convert(Function.infixExpression);
+        Function.postfixExpression = convertInfixToRPN(Function.infixExpression);
     }
 
-    public double outputFOfXY(Coordinate coordinateToUse) throws EvaluationException {
-        return parse(Function.postfixExpression, coordinateToUse.getXValue(), coordinateToUse.getYValue());
-    }
-
-    // private method converts a given string to RPN
-    private String convert(String infix) {
+    // Method converts a given string to RPN
+    private String convertInfixToRPN(String infix) {
         Stack<String> operatorStack = new Stack<>();
         StringBuilder outputBuilder = new StringBuilder();
         infix = removeAllSpaces(infix);
@@ -59,45 +56,67 @@ class Function implements Serializable {
         return finalResult.substring(0, finalResult.length() - 1);
     }
 
+    // Is the parameterised token a RIGHT PARENTHESIS?
     private boolean isRightParenthesis(String currentToken) {
         return currentToken.equals(")");
     }
 
+    // Is the parameterised token an OPERATOR?
     private boolean isOperator(String currentToken) {
         return currentToken.matches("[*/+\\-\\^(]|s|c|t");
     }
 
+    // Compare the BIDMAS (extended) for each parameterised operator
     private boolean isHigherPrecedence(String currentToken, String peek) {
-        HashMap<String, Integer> operationPrecedenceMap = new HashMap<>();
-        operationPrecedenceMap.put("+", 1);
-        operationPrecedenceMap.put("-", 1);
-        operationPrecedenceMap.put("*", 2);
-        operationPrecedenceMap.put("/", 2);
-        operationPrecedenceMap.put("^", 3);
-        operationPrecedenceMap.put("s", 4);
-        operationPrecedenceMap.put("c", 4);
-        operationPrecedenceMap.put("t", 4);
-        operationPrecedenceMap.put("(", -1);
-        int currentTokenPrecedence = operationPrecedenceMap.get(currentToken);
-        int peekPrecedence = operationPrecedenceMap.get(peek);
+        int currentTokenPrecedence = getPrecedenceForToken(currentToken);
+        int peekPrecedence = getPrecedenceForToken(peek);
         return peekPrecedence >= currentTokenPrecedence;
     }
 
+    // Return int precedence values for each
+    private int getPrecedenceForToken(String token) {
+        switch (token) {
+            case "+":
+            case "-":
+                return 1;
+            case "*":
+            case "/":
+                return 2;
+            case "^":
+                return 3;
+            case "s":
+            case "c":
+            case "t":
+                return 4;
+            case "(":
+                return -1;
+            default:
+                return 0;
+        }
+    }
+
+    // Is the parameterised token a LEFT PARENTHESIS?
     private boolean isLeftParenthesis(String currentToken) {
         return currentToken.equals("(");
     }
 
+    // Is the parameterised token an OPERAND?
     private boolean checkIfOperand(String currentToken) {
         return currentToken.matches("(?:\\d*\\.?\\d+)|[xype]|pi");
     }
 
+    // Split up a string using a Regular Expression to get all of the operands and operators separate.
     private String[] tokeniseString(String stringToTokenise) {
         return stringToTokenise.split("(?<=[-+^*/()])|(?=[-+*/()^])|(?=[a-z])|(?<=.[a-z])|(?<=[a-z])");
     }
 
-    private double parse(String RPNToParse, double x, double y) throws EvaluationException {
+    String getPostfixExpression() {
+        return Function.postfixExpression;
+    }
+
+    public double evaluate(Coordinate coordinateToUse) throws EvaluationException {
         // Test if the string is equal to an empty string
-        if (RPNToParse.equals("")) {
+        if (getPostfixExpression().equals("")) {
             throw new EvaluationException("RPN String cannot be empty");
         }
         /*
@@ -106,7 +125,7 @@ class Function implements Serializable {
             an operator is encountered
          */
         Stack<String> stack = new Stack<>();
-        String[] tokens = RPNToParse.split(",");
+        String[] tokens = getPostfixExpression().split(",");
         for (String token : tokens) {
             switch (token) {
                 case "+":
@@ -130,10 +149,10 @@ class Function implements Serializable {
                     } catch (NumberFormatException numberFormatException) {
                         switch (stackItemLeft) {
                             case "x":
-                                numberLeft = x;
+                                numberLeft = coordinateToUse.getXValue();
                                 break;
                             case "y":
-                                numberLeft = y;
+                                numberLeft = coordinateToUse.getYValue();
                                 break;
                             case "e":
                                 numberLeft = Math.E;
@@ -150,10 +169,10 @@ class Function implements Serializable {
                     } catch (NumberFormatException e) {
                         switch (stackItemRight) {
                             case "x":
-                                numberRight = x;
+                                numberRight = coordinateToUse.getXValue();
                                 break;
                             case "y":
-                                numberRight = y;
+                                numberRight = coordinateToUse.getYValue();
                                 break;
                             case "e":
                                 numberRight = Math.E;
@@ -199,18 +218,20 @@ class Function implements Serializable {
         return Double.valueOf(stack.pop());
     }
 
-    String getInfixExpression() {
+    // Accessor method for the infix expression
+    public String getInfixExpression() {
         return Function.infixExpression;
     }
 
-    void setInfixExpression(String algorithmString) {
-        Function.infixExpression = algorithmString;
+    // Mutator method for the infix expression
+    public void setInfixExpression(String infixExpression) {
+        Function.infixExpression = infixExpression;
     }
 
-    String[] checkTokens(String[] uncheckedTokenArray) {
+    // This private method checks a String array and moves minus signs if they are unary
+    private String[] checkTokens(String[] uncheckedTokenArray) {
         ArrayList<String> checkedTokensList = new ArrayList<>();
-        // Since unary minus could be counted as an operator, we need to check
-        // for it
+        // Since unary minus could be counted as an operator, we need to check for it
         for (int index = 0; index < uncheckedTokenArray.length; index++) {
             if (index > 0) {
                 // Two consecutive operators test
@@ -235,7 +256,8 @@ class Function implements Serializable {
         return checkedTokensList.toArray(new String[0]);
     }
 
-    String removeAllSpaces(String input) {
+    // Removes all spaces in a String
+    private String removeAllSpaces(String input) {
         for (int i = 0; i < input.length(); i++) {
             if (input.charAt(i) == ' ') {
                 input = new StringBuilder(input).deleteCharAt(i).toString();

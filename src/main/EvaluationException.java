@@ -1,12 +1,16 @@
 package main;
 
 /*
-    Custom error class to allow moving up the call stack when an evaluation fails.
+    Custom error class is thrown in custom threaded classes
+    which allows going up the call stack and purging memory
+    used if unintentional behavior were to occur.
  */
 public class EvaluationException extends Exception {
     private static final long serialVersionUID = -2461747964902835012L;
 
-    public EvaluationException(String s) {
-        super(s);
+    // Returns a new EvaluationException with the errorDescription
+    public EvaluationException(String errorDescription) {
+        // message moved up the call stack to the UI thread for displaying error
+        super(errorDescription);
     }
 }

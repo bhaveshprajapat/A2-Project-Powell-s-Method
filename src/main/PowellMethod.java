@@ -111,7 +111,7 @@ public class PowellMethod extends Thread implements Serializable {
             Coordinate current = getLinMin().getFinalCoordinate();
             // calculates tolerance in case we're already at minimum
             try {
-                if ((Math.abs(function.outputFOfXY(last) - function.outputFOfXY(current))
+                if ((Math.abs(function.evaluate(last) - function.evaluate(current))
                         < getTolerance()) && (Iterations > 3)) {
                     break;
                 } else {
@@ -133,26 +133,6 @@ public class PowellMethod extends Thread implements Serializable {
         if (stopThreadFlag) {
             return;
         }
-        // initialise conjugate direction search
-        /*getConjugateDirectionSearch().setStartPoint(getUnitVectorSearchList().get(getUnitVectorSearchList().size() - 1));
-        Coordinate lastPoint = getUnitVectorSearchList().get(getUnitVectorSearchList().size() - 1);
-        Coordinate thirdFromLastPoint = getUnitVectorSearchList().get(getUnitVectorSearchList().size() - 3);
-        getConjugateDirectionSearch().setVector(lastPoint, thirdFromLastPoint);
-        MainSceneController.getLog().add("VECTOR"+getConjugateDirectionSearch().getVectorX() + " " + getConjugateDirectionSearch().getVectorY());
-        getConjugateDirectionSearch().setBounds(getBounds());
-        getConjugateDirectionSearch().setTolerance(getTolerance());
-        //Execute conjugate direction search
-        try {
-            getConjugateDirectionSearch().start();
-        } catch (EvaluationException e) {
-            // catch any errors that occur during running
-            setFatalExceptionOccured();
-            setConjugateDirectionSearchList(getConjugateDirectionSearch().getConjugateDirectionSearchList());
-            setConjugateDirectionSearch(null);
-        }
-        if(stopThreadFlag){return;}
-        setConjugateDirectionSearchList((ArrayList<Coordinate>) getConjugateDirectionSearch().getConjugateDirectionSearchList().clone());
-        setFinalCoordinate(getConjugateDirectionSearch().getFinalCoordinate());*/
 
         // initialise exponential search
         Coordinate newStartPoint = getUnitVectorSearchList().get(getUnitVectorSearchList().size() - 1);
@@ -181,7 +161,7 @@ public class PowellMethod extends Thread implements Serializable {
         if (stopThreadFlag) {
             return;
         }
-        setConjugateDirectionSearchList((ArrayList<Coordinate>) getExponentialSearch().getSearchList().clone());
+        setConjugateDirectionSearchList(getExponentialSearch().getCoordinatesOptimisedList());
         setFinalCoordinate(getExponentialSearch().getFinalCoordinate());
 
     }
@@ -251,7 +231,7 @@ public class PowellMethod extends Thread implements Serializable {
         private double xVector;
         private double yVector;
         private Coordinate finalCoordinate;
-        private ArrayList<Coordinate> searchList = new ArrayList<>();
+        private ArrayList<Coordinate> coordinatesOptimisedList = new ArrayList<>();
         private double tolerance;
 
         public ConjugateDirectionExponentialSearch(Coordinate startPoint, double tolerance) {
@@ -267,12 +247,12 @@ public class PowellMethod extends Thread implements Serializable {
             this.finalCoordinate = finalCoordinate;
         }
 
-        public ArrayList<Coordinate> getSearchList() {
-            return searchList;
+        public ArrayList<Coordinate> getCoordinatesOptimisedList() {
+            return coordinatesOptimisedList;
         }
 
         public void start() throws EvaluationException {
-            searchList.add(startPoint);
+            coordinatesOptimisedList.add(startPoint);
             Function function = new Function();
             // declare local variables
             int maxpowerof2 = 2;
@@ -293,14 +273,14 @@ public class PowellMethod extends Thread implements Serializable {
                 tempYValue = coordinate1.getYValue() + scaleVectorByPowerOf2(yVector, maxpowerof2);
                 coordinate3 = new Coordinate(tempXValue, tempYValue);
 
-                fOfCoordinate1 = function.outputFOfXY(coordinate1);
-                fOfCoordinate2 = function.outputFOfXY(coordinate2);
-                fOfCoordinate3 = function.outputFOfXY(coordinate3);
+                fOfCoordinate1 = function.evaluate(coordinate1);
+                fOfCoordinate2 = function.evaluate(coordinate2);
+                fOfCoordinate3 = function.evaluate(coordinate3);
                 if ((fOfCoordinate3 > fOfCoordinate2) && (fOfCoordinate3 > fOfCoordinate1)) {
                     break;
                 } else {
                     maxpowerof2 += 1;
-                    searchList.add(coordinate3);
+                    coordinatesOptimisedList.add(coordinate3);
                 }
             }
             // minimum is now bracketed by coordinate 1 and coordinate 3
@@ -312,9 +292,9 @@ public class PowellMethod extends Thread implements Serializable {
             upperBound = coordinate3;
             lowerBound = coordinate1;
             double fOfUpperBound, fOfLowerBound;
-            fOfLowerBound = function.outputFOfXY(lowerBound);
-            fOfUpperBound = function.outputFOfXY(upperBound);
-            searchList.add(midpoint);
+            fOfLowerBound = function.evaluate(lowerBound);
+            fOfUpperBound = function.evaluate(upperBound);
+            coordinatesOptimisedList.add(midpoint);
             while (true) {
                 if (fOfLowerBound > fOfUpperBound) {
                     lowerBound = midpoint;
@@ -325,11 +305,11 @@ public class PowellMethod extends Thread implements Serializable {
                 midpointX = (upperBound.getXValue() + lowerBound.getXValue()) / 2;
                 midpointY = (upperBound.getYValue() + lowerBound.getYValue()) / 2;
                 Coordinate newMidpoint = new Coordinate(midpointX, midpointY);
-                searchList.add(newMidpoint);
-                double fOfCurrentCoordinate = function.outputFOfXY(searchList.get(searchList.size() - 1));
-                double fOfLastCoordinate = function.outputFOfXY(searchList.get(searchList.size() - 2));
+                coordinatesOptimisedList.add(newMidpoint);
+                double fOfCurrentCoordinate = function.evaluate(coordinatesOptimisedList.get(coordinatesOptimisedList.size() - 1));
+                double fOfLastCoordinate = function.evaluate(coordinatesOptimisedList.get(coordinatesOptimisedList.size() - 2));
                 if (Math.abs(fOfCurrentCoordinate - fOfLastCoordinate) < tolerance) {
-                    setFinalCoordinate(searchList.get(searchList.size() - 1));
+                    setFinalCoordinate(coordinatesOptimisedList.get(coordinatesOptimisedList.size() - 1));
                     break;
                 }
             }
