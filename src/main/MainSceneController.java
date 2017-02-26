@@ -35,7 +35,7 @@ public class MainSceneController {
     private PowellMethod powellMethod;
 
     public static ArrayList<String> getLog() {
-        return log;
+        return MainSceneController.log;
     }
 
     public void setBinarySearchMode(ActionEvent actionEvent) {
