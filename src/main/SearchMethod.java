@@ -1,7 +1,7 @@
 package main;
 
 /*
-    enum to store search method being used
+    Enum to represent a Search Method
  */
 public enum SearchMethod {
     binarySearch, goldenSectionSearch

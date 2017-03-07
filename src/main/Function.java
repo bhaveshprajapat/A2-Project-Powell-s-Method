@@ -5,14 +5,14 @@ import java.util.ArrayList;
 import java.util.EmptyStackException;
 import java.util.Stack;
 
-class Function implements Serializable {
+public class Function implements Serializable {
     // Declare fields
     private static final long serialVersionUID = -4936036854404504779L; // Necessary for serialisable objects in Java
     private static String infixExpression;
     private static String postfixExpression;
 
     // Method converts a given string to RPN
-    private void convertInfixToRPN() {
+    private static void convertInfixToRPN() {
         Stack<String> operatorStack = new Stack<>();
         StringBuilder outputBuilder = new StringBuilder();
         Function.infixExpression = removeAllSpaces(getInfixExpression());
@@ -52,24 +52,24 @@ class Function implements Serializable {
     }
 
     // Is the parameterised token a RIGHT PARENTHESIS?
-    private boolean isRightParenthesis(String currentToken) {
-        return currentToken.equals(")");
+    private static boolean isRightParenthesis(String currentToken) {
+        return ")".equals(currentToken);
     }
 
     // Is the parameterised token an OPERATOR?
-    private boolean isOperator(String currentToken) {
+    private static boolean isOperator(String currentToken) {
         return currentToken.matches("[*/+\\-\\^(]|s|c|t");
     }
 
     // Compare the BIDMAS (extended) for each parameterised operator
-    private boolean isHigherPrecedence(String currentToken, String peek) {
+    private static boolean isHigherPrecedence(String currentToken, String peek) {
         int currentTokenPrecedence = getPrecedenceForToken(currentToken);
         int peekPrecedence = getPrecedenceForToken(peek);
         return peekPrecedence >= currentTokenPrecedence;
     }
 
-    // Return int precedence values for each
-    private int getPrecedenceForToken(String token) {
+    // Return int precedence values for each token
+    private static int getPrecedenceForToken(String token) {
         switch (token) {
             case "+":
             case "-":
@@ -91,21 +91,21 @@ class Function implements Serializable {
     }
 
     // Is the parameterised token a LEFT PARENTHESIS?
-    private boolean isLeftParenthesis(String currentToken) {
-        return currentToken.equals("(");
+    private static boolean isLeftParenthesis(String currentToken) {
+        return "(".equals(currentToken);
     }
 
     // Is the parameterised token an OPERAND?
-    private boolean checkIfOperand(String currentToken) {
+    private static boolean checkIfOperand(String currentToken) {
         return currentToken.matches("(?:\\d*\\.?\\d+)|[xype]|pi");
     }
 
     // Split up a string using a Regular Expression to get all of the operands and operators separate.
-    private String[] tokeniseString(String stringToTokenise) {
+    private static String[] tokeniseString(String stringToTokenise) {
         return stringToTokenise.split("(?<=[-+^*/()])|(?=[-+*/()^])|(?=[a-z])|(?<=.[a-z])|(?<=[a-z])");
     }
 
-    private String getPostfixExpression() {
+    private static String getPostfixExpression() {
         return Function.postfixExpression;
     }
 
@@ -113,7 +113,7 @@ class Function implements Serializable {
         Function.postfixExpression = postfixExpression;
     }
 
-    public double evaluate(Coordinate coordinateToUse) throws EvaluationException {
+    public static double evaluate(Coordinate coordinateToUse) throws EvaluationException {
         /*
             Work through each token in the array, pushing
             operands to the stack and popping operands if
@@ -121,117 +121,121 @@ class Function implements Serializable {
          */
         Stack<String> stack = new Stack<>();
         String[] tokens = getPostfixExpression().split(",");
+        double numberLeft, numberRight;
         for (String token : tokens) {
-            switch (token) {
-                case "+":
-                case "-":
-                case "/":
-                case "*":
-                case "^":
-                case "s":
-                case "c":
-                case "t":
-                    String stackItemLeft, stackItemRight;
-                    stackItemRight = stack.pop();
-                    try {
-                        stackItemLeft = stack.pop();
-                    } catch (EmptyStackException emptyStackException) {
-                        stackItemLeft = "0";
+            // if the current token is an operator pop items off the stack
+            if (isOperator(token)) {
+                String stackItemLeft, stackItemRight;
+                // pop the first operand off the stack
+                stackItemRight = stack.pop();
+                try {
+
+                    // attempt to pop a second item off of the stack
+                    stackItemLeft = stack.pop();
+                } catch (EmptyStackException emptyStackException) {
+                    stackItemLeft = "0";
+                }
+                // Attempt numeric conversion
+                try {
+                    numberLeft = Double.parseDouble(stackItemLeft);
+                } catch (NumberFormatException numberFormatException) {
+                    // If the operand isn't a number, it must be a letter representation
+                    switch (stackItemLeft) {
+                        case "x":
+                            numberLeft = coordinateToUse.getXValue();
+                            break;
+                        case "y":
+                            numberLeft = coordinateToUse.getYValue();
+                            break;
+                        case "e":
+                            numberLeft = Math.E;
+                            break;
+                        case "p":
+                            numberLeft = Math.PI;
+                            break;
+                        default:
+                            // a letter has been used that has no known value
+                            throw new EvaluationException("Unrecognised operand: " + stackItemLeft);
                     }
-                    double numberLeft, numberRight;
-                    try {
-                        numberLeft = Double.parseDouble(stackItemLeft);
-                    } catch (NumberFormatException numberFormatException) {
-                        switch (stackItemLeft) {
-                            case "x":
-                                numberLeft = coordinateToUse.getXValue();
-                                break;
-                            case "y":
-                                numberLeft = coordinateToUse.getYValue();
-                                break;
-                            case "e":
-                                numberLeft = Math.E;
-                                break;
-                            case "p":
-                                numberLeft = Math.PI;
-                                break;
-                            default:
-                                throw new EvaluationException("Unrecognised operand: " + stackItemLeft);
-                        }
+                }
+                try {
+                    // Attempt numeric conversion
+                    numberRight = Double.parseDouble(stackItemRight);
+                } catch (NumberFormatException e) {
+                    // If the operand isn't a number, it must be a letter representation
+                    switch (stackItemRight) {
+                        case "x":
+                            numberRight = coordinateToUse.getXValue();
+                            break;
+                        case "y":
+                            numberRight = coordinateToUse.getYValue();
+                            break;
+                        case "e":
+                            numberRight = Math.E;
+                            break;
+                        case "p":
+                            numberRight = Math.PI;
+                            break;
+                        default:
+                            // a letter has been used that has no known value
+                            throw new EvaluationException("Unrecognised operand: " + stackItemLeft);
                     }
-                    try {
-                        numberRight = Double.parseDouble(stackItemRight);
-                    } catch (NumberFormatException e) {
-                        switch (stackItemRight) {
-                            case "x":
-                                numberRight = coordinateToUse.getXValue();
-                                break;
-                            case "y":
-                                numberRight = coordinateToUse.getYValue();
-                                break;
-                            case "e":
-                                numberRight = Math.E;
-                                break;
-                            case "p":
-                                numberRight = Math.PI;
-                                break;
-                            default:
-                                throw new EvaluationException("Unrecognised operand: " + stackItemLeft);
-                        }
-                    }
-                    switch (token) {
-                        case "+":
-                            stack.push(String.valueOf(numberLeft + numberRight));
-                            break;
-                        case "-":
-                            stack.push(String.valueOf(numberLeft - numberRight));
-                            break;
-                        case "*":
-                            stack.push(String.valueOf(numberLeft * numberRight));
-                            break;
-                        case "/":
-                            stack.push(String.valueOf(numberLeft / numberRight));
-                            break;
-                        case "^":
-                            stack.push(String.valueOf(Math.pow(numberLeft, numberRight)));
-                            break;
-                        case "s":
-                            stack.push(String.valueOf(Math.pow(Math.sin(numberLeft), numberRight)));
-                            break;
-                        case "c":
-                            stack.push(String.valueOf(Math.pow(Math.cos(numberLeft), numberRight)));
-                            break;
-                        case "t":
-                            stack.push(String.valueOf(Math.pow(Math.tan(numberLeft), numberRight)));
-                            break;
-                    }
-                    break;
-                default:
-                    stack.push(token);
+                }
+                // Perform the operator on the two popped stack items
+                switch (token) {
+                    case "+":
+                        stack.push(String.valueOf(numberLeft + numberRight));
+                        break;
+                    case "-":
+                        stack.push(String.valueOf(numberLeft - numberRight));
+                        break;
+                    case "*":
+                        stack.push(String.valueOf(numberLeft * numberRight));
+                        break;
+                    case "/":
+                        stack.push(String.valueOf(numberLeft / numberRight));
+                        break;
+                    case "^":
+                        stack.push(String.valueOf(Math.pow(numberLeft, numberRight)));
+                        break;
+                    case "s":
+                        stack.push(String.valueOf(Math.pow(Math.sin(numberLeft), numberRight)));
+                        break;
+                    case "c":
+                        stack.push(String.valueOf(Math.pow(Math.cos(numberLeft), numberRight)));
+                        break;
+                    case "t":
+                        stack.push(String.valueOf(Math.pow(Math.tan(numberLeft), numberRight)));
+                        break;
+                }
+            } else {
+                // current item is a operand, so push it to the stack
+                stack.push(token);
             }
         }
+        // return the evaluation
         return Double.valueOf(stack.pop());
     }
 
     // Accessor method for the infix expression
-    public String getInfixExpression() {
+    public static String getInfixExpression() {
         return Function.infixExpression;
     }
 
     // Mutator method for the infix expression
-    public void setInfixExpression(String infixExpression) {
+    public static void setInfixExpression(String infixExpression) {
         Function.infixExpression = infixExpression;
         convertInfixToRPN();
     }
 
     // This private method checks a String array and moves minus signs if they are unary
-    private String[] checkTokens(String[] uncheckedTokenArray) {
+    private static String[] checkTokens(String[] uncheckedTokenArray) {
         ArrayList<String> checkedTokensList = new ArrayList<>();
         // Since unary minus could be counted as an operator, we need to check for it
         for (int index = 0; index < uncheckedTokenArray.length; index++) {
             if (index > 0) {
                 // Two consecutive operators test
-                if (uncheckedTokenArray[index].equals("-") && isOperator(uncheckedTokenArray[index - 1])) {
+                if ("-".equals(uncheckedTokenArray[index]) && isOperator(uncheckedTokenArray[index - 1])) {
                     uncheckedTokenArray[index] = "";
                     uncheckedTokenArray[index + 1] = "-" + uncheckedTokenArray[index + 1];
                     // Current token is obsolete
@@ -240,7 +244,7 @@ class Function implements Serializable {
             }
             if (index == 0) {
                 // '-' at start test
-                if (uncheckedTokenArray[index].equals("-")) {
+                if ("-".equals(uncheckedTokenArray[index])) {
                     uncheckedTokenArray[index + 1] = "-" + uncheckedTokenArray[index + 1];
                     // Current token is obsolete
                     checkedTokensList.add(uncheckedTokenArray[index]);
@@ -253,7 +257,7 @@ class Function implements Serializable {
     }
 
     // Removes all spaces in a String
-    private String removeAllSpaces(String input) {
+    private static String removeAllSpaces(String input) {
         for (int i = 0; i < input.length(); i++) {
             if (input.charAt(i) == ' ') {
                 input = new StringBuilder(input).deleteCharAt(i).toString();

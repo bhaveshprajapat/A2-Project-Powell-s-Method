@@ -12,14 +12,13 @@ public class PowellMethod extends Thread implements Serializable {
     private double Tolerance;
     private double Bounds;
     private Coordinate StartPoint;
-    private boolean FatalExceptionOccurred;
+    private boolean FatalExceptionOccurred, cancelled;
     private transient LinMin linMin;
     private ArrayList<Coordinate> UnitVectorSearchList = new ArrayList<>();
     private ArrayList<Coordinate> ConjugateDirectionSearchList = new ArrayList<>();
     private Coordinate finalCoordinate;
     private transient PowellMethod.ConjugateDirectionExponentialSearch exponentialSearch;
     private volatile boolean stopThreadFlag;
-
     // Class constructor
     public PowellMethod(double tolerance, double bounds, Coordinate startPoint, SearchMethod searchMethod) {
         Tolerance = tolerance;
@@ -75,6 +74,7 @@ public class PowellMethod extends Thread implements Serializable {
         // loop over linmin
         while (true) {
             if (stopThreadFlag) {
+                cancelled = true;
                 return;
             }
             // Set up the linmin object
@@ -101,6 +101,7 @@ public class PowellMethod extends Thread implements Serializable {
             }
             // Check for a stop, since linmin was a blocking action
             if (stopThreadFlag) {
+                cancelled = true;
                 return;
             }
             // Adds linmin result to list
@@ -115,7 +116,7 @@ public class PowellMethod extends Thread implements Serializable {
                         < getTolerance()) && (Iterations > 3)) {
                     break;
                 } else {
-                    // run another optmisation
+                    // run another optimisation
                     optimisingByX = !optimisingByX;
                     initialRun = false;
                     Iterations += 1;
@@ -131,6 +132,7 @@ public class PowellMethod extends Thread implements Serializable {
             }
         }
         if (stopThreadFlag) {
+            cancelled = true;
             return;
         }
 
@@ -142,14 +144,17 @@ public class PowellMethod extends Thread implements Serializable {
         if (getExponentialSearch().getStartPoint().equals(getStartPoint())) {
             setFinalCoordinate(getStartPoint());
             MainSceneController.getLog().add("No conjugate direction optimisation performed, already at minimum.");
+            MainSceneController.getLog().add("The method may have been caught inside a local minimum, try higher bounds in this event.");
             return;
         }
         if ((getExponentialSearch().getxVector() == 0D) && (getExponentialSearch().getyVector() == 0D)) {
             setFinalCoordinate(getStartPoint());
             MainSceneController.getLog().add("No conjugate direction optimisation performed, already at minimum.");
+            MainSceneController.getLog().add("The method may have been caught inside a local minimum, try higher bounds in this event.");
             return;
         }
         if (stopThreadFlag) {
+            cancelled = true;
             return;
         }
         try {
@@ -159,6 +164,7 @@ public class PowellMethod extends Thread implements Serializable {
             setFatalExceptionOccured();
         }
         if (stopThreadFlag) {
+            cancelled = true;
             return;
         }
         setConjugateDirectionSearchList(getExponentialSearch().getCoordinatesOptimisedList());
@@ -168,6 +174,10 @@ public class PowellMethod extends Thread implements Serializable {
 
     public ArrayList<Coordinate> getUnitVectorSearchList() {
         return UnitVectorSearchList;
+    }
+
+    public void setUnitVectorSearchList(ArrayList<Coordinate> unitVectorSearchList) {
+        UnitVectorSearchList = unitVectorSearchList;
     }
 
     // getter for conjugate direction search list
@@ -207,7 +217,7 @@ public class PowellMethod extends Thread implements Serializable {
 
     // getter for function
     public String getFunctionString() {
-        return function.getInfixExpression();
+        return Function.getInfixExpression();
     }
 
     public boolean isFatalExceptionOccurred() {
@@ -224,6 +234,33 @@ public class PowellMethod extends Thread implements Serializable {
 
     public void setStopThreadFlag(boolean stopThreadFlag) {
         this.stopThreadFlag = stopThreadFlag;
+    }
+
+    public void runTwoDimensionalAdjustment() {
+        ArrayList<Coordinate> newUnitVectorList = new ArrayList<>();
+        ArrayList<Coordinate> newConjugateList = new ArrayList<>();
+        try {
+            for (Coordinate c : getConjugateDirectionSearchList()) {
+                Coordinate d = new Coordinate(c.getXValue(), function.evaluate(new Coordinate(c.getXValue(), 0D)));
+                newUnitVectorList.add(d);
+            }
+            for (Coordinate c : getUnitVectorSearchList()) {
+                Coordinate e = new Coordinate(c.getXValue(), function.evaluate(new Coordinate(c.getXValue(), 0D)));
+                newConjugateList.add(e);
+            }
+            Coordinate finalCoordinate = getFinalCoordinate();
+            setFinalCoordinate(new Coordinate(finalCoordinate.getXValue(), function.evaluate(new Coordinate(finalCoordinate.getXValue(), 0D))));
+            setConjugateDirectionSearchList(newConjugateList);
+            setUnitVectorSearchList(newUnitVectorList);
+        } catch (EvaluationException e) {
+            MainSceneController.getLog().add(e.getMessage());
+
+
+        }
+    }
+
+    public boolean getCancelled() {
+        return cancelled;
     }
 
     public class ConjugateDirectionExponentialSearch {

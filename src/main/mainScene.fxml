@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!-- VBox to hold the menu bar at the top and the split pane -->
 <?import javafx.geometry.*?>
 <?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.chart.ScatterChart?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <VBox xmlns:fx="http://javafx.com/fxml/1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
-      minWidth="-Infinity" prefHeight="419.0" prefWidth="762.0" xmlns="http://javafx.com/javafx/8.0.101"
+      minWidth="-Infinity" prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8.0.101"
       fx:controller="main.MainSceneController">
+    <!-- Splitpane holds menu items -->
     <MenuBar>
         <Menu mnemonicParsing="false" text="File">
             <MenuItem mnemonicParsing="false" onAction="#closeButtonClicked" text="Close"/>
@@ -28,11 +30,12 @@
             <MenuItem mnemonicParsing="false" onAction="#setToLeviFunctionN13" text="Lévi Function N.13"/>
         </Menu>
         <Menu mnemonicParsing="false" text="Help">
-            <MenuItem mnemonicParsing="false" onAction="#helpButtonClicked" text="About"/>
+            <MenuItem mnemonicParsing="false" onAction="#helpButtonClicked" text="Open Help"/>
         </Menu>
     </MenuBar>
-    <SplitPane fx:id="splitPane" dividerPositions="0.49331103678929766" prefHeight="160.0" prefWidth="200.0"
-               VBox.vgrow="ALWAYS">
+    <!-- Split pane has two horizontal components which can be resized as necessary -->
+    <SplitPane fx:id="splitPane" dividerPositions="0.5" prefHeight="160.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+        <!-- First split pane component -->
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
             <VBox prefHeight="373.0" prefWidth="296.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                   AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -45,9 +48,12 @@
                     <VBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                     </VBox.margin>
+                    <tooltip>
+                        <Tooltip
+                                text="Input the function, f(x,y), to use. You can use the functions below. You must include all operators, e.g. multiplication before brackets."
+                                wrapText="true"/>
+                    </tooltip>
                 </TextField>
-
-
                 <GridPane>
                     <columnConstraints>
                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
@@ -98,8 +104,8 @@
                         </GridPane.margin>
                     </TextField>
                     <Button alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#onRunButtonClicked"
-                            text="Run / Cancel" GridPane.columnIndex="1" GridPane.halignment="RIGHT"
-                            GridPane.rowIndex="6">
+                            text="Run / Press to Cancel" textAlignment="CENTER" GridPane.columnIndex="1"
+                            GridPane.halignment="RIGHT" GridPane.rowIndex="6">
                         <GridPane.margin>
                             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                         </GridPane.margin>
@@ -113,51 +119,76 @@
                         <GridPane.margin>
                             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                         </GridPane.margin>
+                        <tooltip>
+                            <Tooltip
+                                    text="To change the search algorithm to use, select 'Change Search Algorithm' from the toolbar"/>
+                        </tooltip>
                     </Label>
                     <Label GridPane.columnIndex="1" GridPane.rowIndex="5"/>
                     <HBox prefHeight="100.0" prefWidth="200.0">
                         <Button mnemonicParsing="false" onAction="#addSin" text="sin">
                             <HBox.margin>
-                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
                             </HBox.margin>
                         </Button>
                         <Button mnemonicParsing="false" onAction="#AddCos" text="cos">
                             <HBox.margin>
-                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
                             </HBox.margin>
                         </Button>
                         <Button mnemonicParsing="false" onAction="#AddTan" text="tan">
                             <HBox.margin>
-                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
                             </HBox.margin>
                         </Button>
                         <Button mnemonicParsing="false" onAction="#addE" text="e">
                             <HBox.margin>
-                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
                             </HBox.margin>
                         </Button>
+                        <Button mnemonicParsing="false" text="sec">
+                            <HBox.margin>
+                                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
+                            </HBox.margin>
+                        </Button>
+                        <Button mnemonicParsing="false" text="csc">
+                            <HBox.margin>
+                                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
+                            </HBox.margin>
+                        </Button>
+                        <GridPane.margin>
+                            <Insets bottom="1.0" left="1.0" right="1.0" top="1.0"/>
+                        </GridPane.margin>
                     </HBox>
                     <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1">
-                        <Button mnemonicParsing="false" onAction="#addSinSquared" text="sin2">
+                        <Button mnemonicParsing="false" text="cot" HBox.hgrow="ALWAYS">
                             <HBox.margin>
-                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
                             </HBox.margin>
                         </Button>
-                        <Button mnemonicParsing="false" onAction="#addCosSquared" text="cos2">
+                        <Button mnemonicParsing="false" onAction="#addSinSquared" text="sin^2" HBox.hgrow="ALWAYS">
                             <HBox.margin>
-                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
                             </HBox.margin>
                         </Button>
-                        <Button mnemonicParsing="false" onAction="#addTanSquared" text="tan2">
+                        <Button mnemonicParsing="false" onAction="#addCosSquared" text="cos^2" HBox.hgrow="ALWAYS">
                             <HBox.margin>
-                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
                             </HBox.margin>
                         </Button>
-                        <Button mnemonicParsing="false" onAction="#addPi" text="pi">
+                        <Button mnemonicParsing="false" onAction="#addTanSquared" text="tan^2" HBox.hgrow="ALWAYS">
                             <HBox.margin>
-                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
                             </HBox.margin>
                         </Button>
+                        <Button mnemonicParsing="false" onAction="#addPi" text="pi" HBox.hgrow="ALWAYS">
+                            <HBox.margin>
+                                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
+                            </HBox.margin>
+                        </Button>
+                        <GridPane.margin>
+                            <Insets bottom="1.0" left="1.0" right="1.0" top="1.0"/>
+                        </GridPane.margin>
                     </HBox>
                     <Slider fx:id="toleranceSlider" blockIncrement="1.0" majorTickUnit="1.0" max="10.0"
                             minorTickCount="1" showTickLabels="true" showTickMarks="true" snapToTicks="true"
@@ -188,9 +219,11 @@
 
             </VBox>
         </AnchorPane>
+        <!-- Second split pane component -->
         <AnchorPane>
             <VBox prefHeight="373.0" prefWidth="296.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                   AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                <!-- Toolbar to show output related controls and saving/loading functionality -->
                 <ToolBar minWidth="0.0" prefHeight="40.0" prefWidth="200.0">
                     <MenuButton mnemonicParsing="false" text="Save / Load">
                         <items>
@@ -203,21 +236,48 @@
                             <MenuItem mnemonicParsing="false" onAction="#loadResultsFromFileInNewWindow"
                                       text="Load results from file in a new window"/>
                         </items>
+                        <tooltip>
+                            <Tooltip text="Lists options for saving and loading sets of results"/>
+                        </tooltip>
+                        <padding>
+                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                        </padding>
+                        <VBox.margin>
+                            <Insets/>
+                        </VBox.margin>
                     </MenuButton>
-                    <CheckBox fx:id="clearExistingDataCheckbox" mnemonicParsing="false" selected="true"
-                              text="Clear Existing Data?"/>
-                    <Button mnemonicParsing="false" onAction="#twoDimensionalGraphMode" text="2D Mode"/>
+                    <CheckBox fx:id="LayerDataCheckbox" mnemonicParsing="false" text="Layer Graphs">
+                        <tooltip>
+                            <Tooltip
+                                    text="If this checkbox is ticked, running an optimisation will remove existing plots from the graph"/>
+                        </tooltip>
+                        <padding>
+                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                        </padding>
+                    </CheckBox>
+                    <CheckBox fx:id="auto2DCheckBox" mnemonicParsing="false" selected="true" text="AUTO2D">
+                        <padding>
+                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                        </padding>
+                    </CheckBox>
                 </ToolBar>
+                <!-- Scatter graph that shows the results from an optimisation -->
                 <ScatterChart fx:id="mainSceneGraph" minWidth="0.0" onMouseClicked="#onGraphClicked" opacity="0.25"
                               title="No results to show" VBox.vgrow="ALWAYS">
                     <xAxis>
-                        <NumberAxis label="y" side="BOTTOM"/>
+                        <NumberAxis forceZeroInRange="false" label="x" side="BOTTOM"/>
                     </xAxis>
                     <yAxis>
-                        <NumberAxis label="x" side="LEFT"/>
+                        <NumberAxis forceZeroInRange="false" label="y" side="LEFT"/>
                     </yAxis>
+                    <VBox.margin>
+                        <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
+                    </VBox.margin>
                 </ScatterChart>
             </VBox>
         </AnchorPane>
+        <VBox.margin>
+            <Insets/>
+        </VBox.margin>
     </SplitPane>
 </VBox>

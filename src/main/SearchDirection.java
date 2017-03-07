@@ -1,7 +1,7 @@
 package main;
 
 /*
-    Enum to store search direction
+    Enum to represent a Search Direction
  */
 public enum SearchDirection {
     Vector_I,

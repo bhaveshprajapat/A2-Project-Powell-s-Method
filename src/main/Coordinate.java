@@ -3,7 +3,6 @@ package main;
 /*
     Custom Coordinate class which stores a corresponding X and Y Value.
  */
-
 import java.io.Serializable;
 
 public class Coordinate implements Serializable {
