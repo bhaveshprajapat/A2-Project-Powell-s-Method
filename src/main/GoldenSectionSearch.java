@@ -5,6 +5,7 @@ public class GoldenSectionSearch extends LinMin {
     void startSearch() throws EvaluationException {
         Function function = new Function();
         boolean optimisingByX = (getSearchDirection() == SearchDirection.Vector_I);
+
         double previousZValue = function.evaluate(getStartPoint());
         int vectorX = (getSearchDirection() == SearchDirection.Vector_I) ? 1 : 0;
         int vectorY = (getSearchDirection() == SearchDirection.Vector_J) ? 1 : 0;

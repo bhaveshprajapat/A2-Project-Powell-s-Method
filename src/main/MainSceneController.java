@@ -362,8 +362,8 @@ public class MainSceneController {
     // Updates the graph in the main window with the result
     private void updateGraphInMainWindow(PowellMethod result) {
         Coordinate finalCoordinate = result.getFinalCoordinate();
-        ScatterChart.Series UnitVectorScatterChartSeries = createSeriesFromArrayList(result.getUnitVectorSearchList());
-        ScatterChart.Series ConjugateDirectionScatterChartSeries = createSeriesFromArrayList(result.getConjugateDirectionSearchList());
+        ScatterChart.Series UnitVectorScatterChartSeries = MainSceneController.createSeriesFromArrayList(result.getUnitVectorSearchList());
+        ScatterChart.Series ConjugateDirectionScatterChartSeries = MainSceneController.createSeriesFromArrayList(result.getConjugateDirectionSearchList());
         // Removes existing data from the graph if necessary
         if (!LayerDataCheckbox.isSelected()) {
             mainSceneGraph.getData().clear();
@@ -381,9 +381,9 @@ public class MainSceneController {
         mainSceneGraph.getData().add(finalCoordinateSeries);
     }
 
-    private void createSeriesAndDrawGraph(ArrayList<Coordinate> ArrayListForSeries1,
-                                          Coordinate finalCoordinate,
-                                          ArrayList<Coordinate> ArrayListForSeries3, String function) {
+    private static void createSeriesAndDrawGraph(ArrayList<Coordinate> ArrayListForSeries1,
+                                                 Coordinate finalCoordinate,
+                                                 ArrayList<Coordinate> ArrayListForSeries3, String function) {
         // Series 1: UnitVector Search
         ScatterChart.Series<Number, Number> UnitVectorSearchChartSeries = new ScatterChart.Series<Number, Number>();
         UnitVectorSearchChartSeries.setName("Unit Vector Search Data");
