@@ -20,19 +20,18 @@ import java.util.concurrent.FutureTask;
 
 public class MainSceneController {
     private static ArrayList<String> log = new ArrayList<>();
-    public ProgressIndicator progressIndicator;
-    public ScatterChart<Number, Number> mainSceneGraph;
-    public SplitPane splitPane;
-    public TextField functionTextField;
-    public TextField startPointXTextField;
-    public TextField startPointYTextField;
-    public TextField boundsTextField;
-    public Label searchAlgorithmIndicator;
+    public ProgressIndicator ProgressIndicator;
+    public ScatterChart<Number, Number> MainSceneGraph;
+    public TextField FunctionTextField;
+    public TextField StartPointXTextField;
+    public TextField StartPointYTextField;
+    public TextField BoundsTextField;
+    public Label SearchAlgorithmIndicator;
     public CheckBox LayerDataCheckbox;
-    public TextArea logTextArea;
-    public Slider toleranceSlider;
-    public CheckBox auto2DCheckBox;
-    private SearchMethod AlgorithmToUse = SearchMethod.binarySearch;
+    public TextArea LogTextArea;
+    public Slider ToleranceSlider;
+    public CheckBox AUTO2DCheckBox;
+    private SearchMethod AlgorithmToUse = SearchMethod.BINARY_SEARCH;
     private PowellMethod runResult;
     private PowellMethod loadedResult;
     private PowellMethod powellMethod;
@@ -83,304 +82,6 @@ public class MainSceneController {
         }
     }
 
-    public void setBinarySearchMode(ActionEvent actionEvent) {
-        /*
-            Switches the search mode to Binary
-            and changes the text box to reflect this.
-         */
-        AlgorithmToUse = SearchMethod.binarySearch;
-        searchAlgorithmIndicator.setText("Binary Search");
-    }
-
-    public void setGoldenSectionSearchMode(ActionEvent actionEvent) {
-        /*
-            Switches the search mode to Golden Section
-            and changes the text box to reflect this
-         */
-        AlgorithmToUse = SearchMethod.goldenSectionSearch;
-        searchAlgorithmIndicator.setText("Golden Section Search");
-    }
-
-    public void saveThisSetOfResults(ActionEvent actionEvent) {
-        /*
-            Saves the set of results from the last run made in this session
-         */
-        if (getRunResult() != null) { // Check to ensure that a run result exists
-            /*
-                Creates a file save dialog
-            */
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Save results to a PMR File");
-            // Set the extension filter to .pmr
-            FileChooser.ExtensionFilter extensionFilter =
-                    new FileChooser.ExtensionFilter("Powell's Method Result Files (*.pmr)", "*.pmr");
-            fileChooser.getExtensionFilters().add(extensionFilter);
-            /*
-                Opens a file save dialog and appends the extension if it was deleted
-            */
-            File file = fileChooser.showSaveDialog(null);
-            if (!file.getPath().toLowerCase().endsWith(".pmr")) {
-                file = new File(file.getPath() + ".pmr");
-            }
-            /*
-                Writes out the runResult object to the file specified.
-            */
-            try {
-                FileOutputStream fileOutputStream = new FileOutputStream(file);
-                ObjectOutputStream out = new ObjectOutputStream(fileOutputStream);
-                out.writeObject(getRunResult());
-                // Flush and close file and file streams
-                out.flush();
-                out.close();
-                fileOutputStream.flush();
-                fileOutputStream.close();
-            } catch (IOException e) {
-                Alert IOAlert = new Alert(Alert.AlertType.ERROR);
-                IOAlert.setTitle("Error during file write!");
-                IOAlert.setHeaderText("Some error occurred during the file write process. For more information see below...");
-                IOAlert.setContentText(e.getLocalizedMessage());
-                IOAlert.show();
-            }
-        }
-    }
-
-    public void loadResultsFromFile(ActionEvent actionEvent) {
-        // Un-grey out the graph
-        mainSceneGraph.setOpacity(1);
-        /*
-            Open a file chooser to select a file
-         */
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save Results to PMR File");
-        // Set extension filter
-        FileChooser.ExtensionFilter extFilter =
-                new FileChooser.ExtensionFilter("Powell's Method Result Files (*.pmr)", "*.pmr");
-        fileChooser.getExtensionFilters().add(extFilter);
-        File file = fileChooser.showOpenDialog(null);
-        FileInputStream fileInputStream;
-        // Test if file exists
-        if (file == null) {
-            return;
-        }
-        // Attempt to open the file
-        try {
-            fileInputStream = new FileInputStream(file);
-            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-            // Deserialise the object and close streams
-            setLoadedResult((PowellMethod) objectInputStream.readObject());
-            objectInputStream.close();
-            fileInputStream.close();
-            // Loads the data to the graph
-            updateGraphInMainWindow(getLoadedResult());
-        } catch (IOException | ClassNotFoundException e) {
-            Alert IOAlert = new Alert(Alert.AlertType.ERROR);
-            IOAlert.setTitle("Error during file opening!");
-            IOAlert.setHeaderText("Some error occurred during the file opening process. For more information see below...");
-            IOAlert.setContentText(e.getLocalizedMessage());
-            IOAlert.show();
-        }
-    }
-
-    public void loadTheseResultsInNewWindow(ActionEvent actionEvent) {
-        // Un-grey out the graph
-        mainSceneGraph.setOpacity(1);
-        /*
-            Loads the coordinate list from the loaded result
-         */
-        ArrayList<Coordinate> unitVectorSearchList = getLoadedResult().getUnitVectorSearchList();
-        Coordinate finalCoordinate = getLoadedResult().getFinalCoordinate();
-        ArrayList<Coordinate> conjugateDirectionSearchList = getLoadedResult().getConjugateDirectionSearchList();
-        // Calls method to open a new graph in a new window with this data
-        createSeriesAndDrawGraph(unitVectorSearchList, finalCoordinate, conjugateDirectionSearchList, "Insert func");
-    }
-
-    public void loadResultsFromFileInNewWindow(ActionEvent actionEvent) {
-        PowellMethod results = null;
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save Results to PMR File");
-        // Set extension filter
-        FileChooser.ExtensionFilter extFilter =
-                new FileChooser.ExtensionFilter("Powell's Method Result Files (*.pmr)", "*.pmr");
-        fileChooser.getExtensionFilters().add(extFilter);
-        List<File> files = fileChooser.showOpenMultipleDialog(null);
-        try {
-            for (File file : files) {
-                if (file != null) {
-                    try {
-                        FileInputStream fileInputStream = new FileInputStream(file);
-                        ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-                        results = (PowellMethod) objectInputStream.readObject();
-                        objectInputStream.close();
-                        fileInputStream.close();
-                    } catch (ClassNotFoundException | IOException exception) {
-                        MainSceneController.getLog().add(exception.getLocalizedMessage());
-                    }
-                    if (results != null) {
-                        progressIndicator.setProgress(1);
-                        // Series 1: UnitVectorSearchArrayList
-                        ArrayList<Coordinate> unitVectorSearchList = results.getUnitVectorSearchList();
-                        // Series 2 : final coordinate
-                        Coordinate finalCoordinate = results.getFinalCoordinate();
-                        // Series 3: conjugate direction search data
-                        ArrayList<Coordinate> conjugateDirectionSearchCoordinateList = results.getUnitVectorSearchList();
-                        createSeriesAndDrawGraph(unitVectorSearchList, finalCoordinate, conjugateDirectionSearchCoordinateList, "insert func");
-                    }
-                }
-            }
-        } catch (NullPointerException e) {
-            getLog().add(e.getLocalizedMessage());
-            updateLog();
-        }
-    }
-
-    public void onRunButtonClicked(ActionEvent actionEvent) {
-        Function function = new Function();
-        if (powellMethod != null) {
-            if (powellMethod.getCancelled()) {
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Cancelled.");
-                alert.showAndWait();
-            }
-            if (powellMethod.isAlive()) {
-                powellMethod.setStopThreadFlag(true);
-                try {
-                    powellMethod.join();
-                } catch (InterruptedException e) {
-                    MainSceneController.getLog().add(e.getLocalizedMessage());
-                }
-                powellMethod = null;
-                return;
-            }
-        }
-        mainSceneGraph.opacityProperty().setValue(100);
-        if (progressIndicator.disabledProperty().getValue()) {
-            progressIndicator.setDisable(false);
-            progressIndicator.setVisible(true);
-        }
-        progressIndicator.setDisable(false);
-        progressIndicator.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
-        // Initialise variables
-        if ("".equals(functionTextField.getText())) {
-            Alert BadInputAlert = new Alert(Alert.AlertType.ERROR);
-            BadInputAlert.setTitle("Invalid input in function text field");
-            BadInputAlert.setHeaderText("No entry in the function text field");
-            BadInputAlert.setContentText("The function text field must not be left blank, please revise.");
-            BadInputAlert.show();
-            progressIndicator.setProgress(0);
-            return;
-        }
-        function.setInfixExpression(functionTextField.getText());
-        double startPointX;
-        double startPointY;
-        double tolerance = Math.pow(0.1, toleranceSlider.getValue());
-        double bounds;
-        try {
-            startPointX = Double.parseDouble(startPointXTextField.getText());
-            startPointY = Double.parseDouble(startPointYTextField.getText());
-            bounds = Double.parseDouble(boundsTextField.getText());
-            if (bounds <= 0D) {
-                throw new NumberFormatException("The bounds value must be > 0");
-            }
-        } catch (NumberFormatException e) {
-            // Show a message with the bad input
-            Alert BadInputAlert = new Alert(Alert.AlertType.ERROR);
-            BadInputAlert.setTitle("Invalid input in one or more boxes");
-            BadInputAlert.setHeaderText("The following input was not recognised:");
-            BadInputAlert.setContentText(e.getLocalizedMessage());
-            BadInputAlert.show();
-            progressIndicator.setProgress(0);
-            return;
-        }
-
-        /*
-        This try block shows errors if the function entered is badly formatted,
-        or even if the function is blank. It then shows a message explaining the
-        error in detail.
-         */
-        try {
-            function.evaluate(new Coordinate(startPointX, startPointY));
-        } catch (RuntimeException e) {
-            progressIndicator.setProgress(0);
-            Alert badFunction = new Alert(Alert.AlertType.ERROR);
-            badFunction.setAlertType(Alert.AlertType.ERROR);
-            badFunction.setTitle("Badly formatted function");
-            badFunction.setHeaderText("The function entered could not be interpreted properly");
-            badFunction.setContentText("Please enter a correctly formatted function. See details:"
-                    + System.getProperty("line.separator")
-                    + e.getLocalizedMessage());
-            badFunction.show();
-            return;
-        } catch (EvaluationException e) {
-            FutureTask<Void> errorDialog = new FutureTask<>(() -> {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Evaluation Exception");
-                alert.setHeaderText("Something went wrong during an evaluation");
-                alert.setContentText("It's possible that your expression has an error in it" + e.getMessage());
-                alert.showAndWait();
-                progressIndicator.setDisable(true);
-            }, null);
-            Platform.runLater(errorDialog);
-        }
-        powellMethod = new PowellMethod(tolerance, bounds, new Coordinate(startPointX, startPointY), AlgorithmToUse);
-        powellMethod.start();
-        FutureTask<Void> UIUpdate = new FutureTask<>(() -> {
-            if (!powellMethod.isFatalExceptionOccurred() && !powellMethod.isStopThreadFlag()) {
-                if (!LayerDataCheckbox.isSelected()) {
-                    mainSceneGraph.getData().clear();
-                }
-                setRunResult(powellMethod);
-                setLoadedResult(powellMethod);
-                progressIndicator.setProgress(1);
-
-                updateLog();
-                if (powellMethod.getCancelled()) {
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Cancelled.");
-                    alert.showAndWait();
-                }
-                if (auto2DCheckBox.isSelected()) {
-                    String functionString = Function.getInfixExpression();
-                    boolean oneDimensionOnly = (functionString.contains("x") && !functionString.contains("y")) || (!functionString.contains("x") && functionString.contains("y"));
-                    if (oneDimensionOnly) {
-                        powellMethod.runTwoDimensionalAdjustment();
-                    }
-                }
-                updateGraphInMainWindow(powellMethod);
-                powellMethod = null;
-            } else {
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Optimisation cancelled on user request.");
-                alert.showAndWait();
-                setRunResult(null);
-                setLoadedResult(null);
-            }
-        }, null);
-        Platform.runLater(UIUpdate);
-
-    }
-
-    // Updates the graph in the main window with the result
-    private void updateGraphInMainWindow(PowellMethod result) {
-        Coordinate finalCoordinate = result.getFinalCoordinate();
-        ScatterChart.Series UnitVectorScatterChartSeries = MainSceneController.createSeriesFromArrayList(result.getUnitVectorSearchList());
-        ScatterChart.Series ConjugateDirectionScatterChartSeries = MainSceneController.createSeriesFromArrayList(result.getConjugateDirectionSearchList());
-        // Removes existing data from the graph if necessary
-        if (!LayerDataCheckbox.isSelected()) {
-            mainSceneGraph.getData().clear();
-        }
-        UnitVectorScatterChartSeries.setName("Unit Vector Search Data");
-        ConjugateDirectionScatterChartSeries.setName("Vector Search Data");
-        mainSceneGraph.getData().addAll(UnitVectorScatterChartSeries, ConjugateDirectionScatterChartSeries);
-        mainSceneGraph.setTitle("Graph showing path taken to " + finalCoordinate.toString());
-        ScatterChart.Data<Number, Number> finalCoordinateData = new ScatterChart.Data<>();
-        finalCoordinateData.setXValue(finalCoordinate.getXValue());
-        finalCoordinateData.setYValue(finalCoordinate.getYValue());
-        ScatterChart.Series<Number, Number> finalCoordinateSeries = new ScatterChart.Series<>();
-        finalCoordinateSeries.getData().add(finalCoordinateData);
-        finalCoordinateSeries.setName("Final Coordinate");
-        mainSceneGraph.getData().add(finalCoordinateSeries);
-    }
-
     private static void createSeriesAndDrawGraph(ArrayList<Coordinate> ArrayListForSeries1,
                                                  Coordinate finalCoordinate,
                                                  ArrayList<Coordinate> ArrayListForSeries3, String function) {
@@ -422,6 +123,299 @@ public class MainSceneController {
         MainSceneController.displayGraph(finalCoordinate, function, UnitVectorSearchChartSeries, finalCoordinateChartSeries, conjugateDirecrtionSearchChartSeries);
     }
 
+    public void setBinarySearchMode(ActionEvent actionEvent) {
+        /*
+            Switches the search mode to Binary
+            and changes the text box to reflect this.
+         */
+        AlgorithmToUse = SearchMethod.BINARY_SEARCH;
+        SearchAlgorithmIndicator.setText("Binary Search");
+    }
+
+    public void setGoldenSectionSearchMode(ActionEvent actionEvent) {
+        /*
+            Switches the search mode to Golden Section
+            and changes the text box to reflect this
+         */
+        AlgorithmToUse = SearchMethod.GOLDEN_SECTION_SEARCH;
+        SearchAlgorithmIndicator.setText("Golden Section Search");
+    }
+
+    public void saveThisSetOfResults(ActionEvent actionEvent) {
+        /*
+            Saves the set of results from the last run made in this session
+         */
+        if (getRunResult() != null) { // Check to ensure that a run result exists
+            /*
+                Creates a file save dialog
+            */
+            FileChooser FileChooser = new FileChooser();
+            FileChooser.setTitle("Save results to a PMR File");
+            // Set the extension filter to .pmr
+            FileChooser.ExtensionFilter extensionFilter =
+                    new FileChooser.ExtensionFilter("Powell's Method Result Files (*.pmr)", "*.pmr");
+            FileChooser.getExtensionFilters().add(extensionFilter);
+            /*
+                Opens a file save dialog and appends the extension if it was deleted
+            */
+            File file = FileChooser.showSaveDialog(null);
+            if (!file.getPath().toLowerCase().endsWith(".pmr")) {
+                file = new File(file.getPath() + ".pmr");
+            }
+            /*
+                Writes out the runResult object to the file specified.
+            */
+            try {
+                FileOutputStream fileOutputStream = new FileOutputStream(file);
+                ObjectOutputStream out = new ObjectOutputStream(fileOutputStream);
+                out.writeObject(getRunResult());
+                // Flush and close file and file streams
+                out.flush();
+                out.close();
+                fileOutputStream.flush();
+                fileOutputStream.close();
+            } catch (IOException e) {
+                Alert IOAlert = new Alert(Alert.AlertType.ERROR);
+                IOAlert.setTitle("Error during file write!");
+                IOAlert.setHeaderText("Some error occurred during the file write process. For more information see below...");
+                IOAlert.setContentText(e.getLocalizedMessage());
+                IOAlert.show();
+            }
+        }
+    }
+
+    public void loadResultsFromFile(ActionEvent actionEvent) {
+        // Un-set the transparency of the graph
+        MainSceneGraph.setOpacity(1);
+        // Open a file chooser to select a file
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Results to PMR File");
+        // Set extension filter
+        FileChooser.ExtensionFilter extFilter =
+                new FileChooser.ExtensionFilter("Powell's Method Result Files (*.pmr)", "*.pmr");
+        fileChooser.getExtensionFilters().add(extFilter);
+        File file = fileChooser.showOpenDialog(null);
+        FileInputStream fileInputStream;
+        // Test if file exists
+        if (file == null) {
+            return;
+        }
+        // Attempt to open the file
+        try {
+            fileInputStream = new FileInputStream(file);
+            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+            // Deserialise the object and close streams
+            setLoadedResult((PowellMethod) objectInputStream.readObject());
+            objectInputStream.close();
+            fileInputStream.close();
+            // Loads the data to the graph
+            updateGraphInMainWindow(getLoadedResult());
+        } catch (IOException | ClassNotFoundException CaughtException) {
+            Alert IOAlert = new Alert(Alert.AlertType.ERROR);
+            IOAlert.setTitle("Error during file opening!");
+            IOAlert.setHeaderText("Some error occurred during the file opening process. For more information see below...");
+            IOAlert.setContentText(CaughtException.getLocalizedMessage());
+            IOAlert.show();
+        }
+    }
+
+    public void loadTheseResultsInNewWindow(ActionEvent actionEvent) {
+        // Un-grey out the graph
+        MainSceneGraph.setOpacity(1);
+        // Loads the coordinate list from the loaded result
+        ArrayList<Coordinate> UnitVectorSearchList = getLoadedResult().getUnitVectorSearchList();
+        Coordinate FinalCoordinate = getLoadedResult().getFinalCoordinate();
+        ArrayList<Coordinate> ConjugateDirectionSearchList = getLoadedResult().getConjugateDirectionSearchList();
+        // Calls method to open a new graph in a new window with this data
+        createSeriesAndDrawGraph(UnitVectorSearchList, FinalCoordinate, ConjugateDirectionSearchList, "Insert func");
+    }
+
+    public void loadResultsFromFileInNewWindow(ActionEvent actionEvent) {
+        PowellMethod LoadedResults = null;
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Results to PMR File");
+        // Set extension filter
+        FileChooser.ExtensionFilter extFilter =
+                new FileChooser.ExtensionFilter("Powell's Method Result Files (*.pmr)", "*.pmr");
+        fileChooser.getExtensionFilters().add(extFilter);
+        List<File> files = fileChooser.showOpenMultipleDialog(null);
+        try {
+            for (File FileStepper : files) {
+                if (FileStepper != null) {
+                    try {
+                        FileInputStream fileInputStream = new FileInputStream(FileStepper);
+                        ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+                        LoadedResults = (PowellMethod) objectInputStream.readObject();
+                        objectInputStream.close();
+                        fileInputStream.close();
+                    } catch (ClassNotFoundException | IOException exception) {
+                        MainSceneController.getLog().add(exception.getLocalizedMessage());
+                    }
+                    if (LoadedResults != null) {
+                        ProgressIndicator.setProgress(1);
+                        // Series 1: UnitVectorSearchArrayList
+                        ArrayList<Coordinate> UnitVectorSearchList = LoadedResults.getUnitVectorSearchList();
+                        // Series 2 : final coordinate
+                        Coordinate FinalCoordinate = LoadedResults.getFinalCoordinate();
+                        // Series 3: conjugate direction search data
+                        ArrayList<Coordinate> ConjugateDirectionSearchCoordinateList = LoadedResults.getUnitVectorSearchList();
+                        createSeriesAndDrawGraph(UnitVectorSearchList, FinalCoordinate, ConjugateDirectionSearchCoordinateList, LoadedResults.getFunctionString());
+                    }
+                }
+            }
+        } catch (NullPointerException CaughtException) {
+            getLog().add(CaughtException.getLocalizedMessage());
+            updateLog();
+        }
+    }
+
+    public void onRunButtonClicked(ActionEvent actionEvent) {
+        if (powellMethod != null) {
+            if (powellMethod.getCancelled()) {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Cancelled.");
+                alert.showAndWait();
+            }
+            if (powellMethod.isAlive()) {
+                powellMethod.setStopThreadFlag();
+                try {
+                    powellMethod.join();
+                } catch (InterruptedException e) {
+                    MainSceneController.getLog().add(e.getLocalizedMessage());
+                }
+                powellMethod = null;
+                return;
+            }
+        }
+        MainSceneGraph.opacityProperty().setValue(100);
+        if (ProgressIndicator.disabledProperty().getValue()) {
+            ProgressIndicator.setDisable(false);
+            ProgressIndicator.setVisible(true);
+        }
+        ProgressIndicator.setDisable(false);
+        ProgressIndicator.setProgress(javafx.scene.control.ProgressIndicator.INDETERMINATE_PROGRESS);
+        // Initialise variables
+        if ("".equals(FunctionTextField.getText())) {
+            Alert BadInputAlert = new Alert(Alert.AlertType.ERROR);
+            BadInputAlert.setTitle("Invalid input in function text field");
+            BadInputAlert.setHeaderText("No entry in the function text field");
+            BadInputAlert.setContentText("The function text field must not be left blank, please revise.");
+            BadInputAlert.show();
+            ProgressIndicator.setProgress(0);
+            return;
+        }
+        Function.setInfixExpression(FunctionTextField.getText());
+        double StartPointX;
+        double StartPointY;
+        double Tolerance = Math.pow(0.1, ToleranceSlider.getValue());
+        double Bounds;
+        try {
+            StartPointX = Double.parseDouble(StartPointXTextField.getText());
+            StartPointY = Double.parseDouble(StartPointYTextField.getText());
+            Bounds = Double.parseDouble(BoundsTextField.getText());
+            if (Bounds <= 0D) {
+                throw new NumberFormatException("The bounds value must be > 0");
+            }
+        } catch (NumberFormatException e) {
+            // Show a message with the bad input
+            Alert BadInputAlert = new Alert(Alert.AlertType.ERROR);
+            BadInputAlert.setTitle("Invalid input in one or more boxes");
+            BadInputAlert.setHeaderText("The following input was not recognised:");
+            BadInputAlert.setContentText(e.getLocalizedMessage());
+            BadInputAlert.show();
+            ProgressIndicator.setProgress(0);
+            return;
+        }
+
+        /*
+        This try block shows errors if the function entered is badly formatted,
+        or even if the function is blank. It then shows a message explaining the
+        error in detail.
+         */
+        try {
+            Function.evaluate(new Coordinate(StartPointX, StartPointY));
+        } catch (RuntimeException e) {
+            ProgressIndicator.setProgress(0);
+            Alert badFunction = new Alert(Alert.AlertType.ERROR);
+            badFunction.setAlertType(Alert.AlertType.ERROR);
+            badFunction.setTitle("Badly formatted function");
+            badFunction.setHeaderText("The function entered could not be interpreted properly");
+            badFunction.setContentText("Please enter a correctly formatted function. See details:"
+                    + System.getProperty("line.separator")
+                    + e.getLocalizedMessage());
+            badFunction.show();
+            return;
+        } catch (EvaluationException e) {
+            FutureTask<Void> errorDialog = new FutureTask<>(() -> {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Evaluation Exception");
+                alert.setHeaderText("Something went wrong during an evaluation");
+                alert.setContentText("It's possible that your expression has an error in it" + e.getMessage());
+                alert.showAndWait();
+                ProgressIndicator.setDisable(true);
+            }, null);
+            Platform.runLater(errorDialog);
+        }
+        powellMethod = new PowellMethod(Tolerance, Bounds, new Coordinate(StartPointX, StartPointY), AlgorithmToUse);
+        powellMethod.start();
+        FutureTask<Void> UIUpdate = new FutureTask<>(() -> {
+            if (!powellMethod.isFatalExceptionOccurred() && !powellMethod.isStopThreadFlag()) {
+                if (!LayerDataCheckbox.isSelected()) {
+                    MainSceneGraph.getData().clear();
+                }
+                setRunResult(powellMethod);
+                setLoadedResult(powellMethod);
+                ProgressIndicator.setProgress(1);
+
+                updateLog();
+                if (powellMethod.getCancelled()) {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Cancelled.");
+                    alert.show();
+                }
+                if (AUTO2DCheckBox.isSelected()) {
+                    String functionString = Function.getInfixExpression();
+                    boolean oneDimensionOnly = (functionString.contains("x") && !functionString.contains("y")) || (!functionString.contains("x") && functionString.contains("y"));
+                    if (oneDimensionOnly) {
+                        powellMethod.runTwoDimensionAdjustment();
+                    }
+                }
+                updateGraphInMainWindow(powellMethod);
+                powellMethod = null;
+            } else {
+                Alert CancellationDialog = new Alert(Alert.AlertType.INFORMATION);
+                CancellationDialog.setTitle("Optimisation cancelled on user request.");
+                CancellationDialog.showAndWait();
+                setRunResult(null);
+                setLoadedResult(null);
+            }
+        }, null);
+        Platform.runLater(UIUpdate);
+
+    }
+
+    // Updates the graph in the main window with the result
+    private void updateGraphInMainWindow(PowellMethod result) {
+        Coordinate finalCoordinate = result.getFinalCoordinate();
+        ScatterChart.Series UnitVectorScatterChartSeries = MainSceneController.createSeriesFromArrayList(result.getUnitVectorSearchList());
+        ScatterChart.Series ConjugateDirectionScatterChartSeries = MainSceneController.createSeriesFromArrayList(result.getConjugateDirectionSearchList());
+        // Removes existing data from the graph if necessary
+        if (!LayerDataCheckbox.isSelected()) {
+            MainSceneGraph.getData().clear();
+        }
+        UnitVectorScatterChartSeries.setName("Unit Vector Search Data");
+        ConjugateDirectionScatterChartSeries.setName("Vector Search Data");
+        MainSceneGraph.getData().addAll(UnitVectorScatterChartSeries, ConjugateDirectionScatterChartSeries);
+        MainSceneGraph.setTitle("Graph showing path taken to " + finalCoordinate.toString());
+        ScatterChart.Data<Number, Number> finalCoordinateData = new ScatterChart.Data<>();
+        finalCoordinateData.setXValue(finalCoordinate.getXValue());
+        finalCoordinateData.setYValue(finalCoordinate.getYValue());
+        ScatterChart.Series<Number, Number> finalCoordinateSeries = new ScatterChart.Series<>();
+        finalCoordinateSeries.getData().add(finalCoordinateData);
+        finalCoordinateSeries.setName("Final Coordinate");
+        MainSceneGraph.getData().add(finalCoordinateSeries);
+    }
+
     // loaded result getter
     private PowellMethod getLoadedResult() {
         return loadedResult;
@@ -444,69 +438,69 @@ public class MainSceneController {
 
     //Changes the function text field to the Booth function
     public void setToBoothFunction(ActionEvent actionEvent) {
-        functionTextField.setText("(x+2*y-7)^2 + (2*x+y-5)^2");
+        FunctionTextField.setText("(x+2*y-7)^2 + (2*x+y-5)^2");
     }
 
     //Changes the function text field to the Matyas function
     public void setToMatyasFunction(ActionEvent actionEvent) {
-        functionTextField.setText("0.26*(x^2 + y^2) - 0.48*x*y");
+        FunctionTextField.setText("0.26*(x^2 + y^2) - 0.48*x*y");
     }
 
     public void twoDimensionalGraphMode(ActionEvent actionEvent) {
-        mainSceneGraph.getData().clear();
-        getLoadedResult().runTwoDimensionalAdjustment();
+        MainSceneGraph.getData().clear();
+        getLoadedResult().runTwoDimensionAdjustment();
         updateGraphInMainWindow(getLoadedResult());
 
     }
 
     //Changes the function text field to the McCormick function
     public void setToMcCormickFunction() {
-        functionTextField.setText("(x+y)s1 + (x-y)^2 -1.5*x+2.5*y+1");
+        FunctionTextField.setText("(x+y)s1 + (x-y)^2 -1.5*x+2.5*y+1");
     }
 
     //Changes the function text field to the Levi function
     public void setToLeviFunctionN13() {
-        functionTextField.setText("(3*p*x)s2+((x-1)^2)*(1+(3*p*y)s2)+((y-1)^2)*(1+(2*p*y)s2)");
+        FunctionTextField.setText("(3*p*x)s2+((x-1)^2)*(1+(3*p*y)s2)+((y-1)^2)*(1+(2*p*y)s2)");
     }
 
     //adds sin to the text field
     public void addSin(ActionEvent actionEvent) {
-        functionTextField.setText(functionTextField.getText() + "()s1");
+        FunctionTextField.setText(FunctionTextField.getText() + "()s1");
     }
 
     //adds cos to the text field
     public void AddCos(ActionEvent actionEvent) {
-        functionTextField.setText(functionTextField.getText() + "()c1");
+        FunctionTextField.setText(FunctionTextField.getText() + "()c1");
     }
 
     // adds tan to the text field
     public void AddTan(ActionEvent actionEvent) {
-        functionTextField.setText(functionTextField.getText() + "()t1");
+        FunctionTextField.setText(FunctionTextField.getText() + "()t1");
     }
 
     // adds sin2 to the text field
     public void addSinSquared(ActionEvent actionEvent) {
-        functionTextField.setText(functionTextField.getText() + "()s2");
+        FunctionTextField.setText(FunctionTextField.getText() + "()s2");
     }
 
     // adds cos2 to the function text field
     public void addCosSquared(ActionEvent actionEvent) {
-        functionTextField.setText(functionTextField.getText() + "()c2");
+        FunctionTextField.setText(FunctionTextField.getText() + "()c2");
     }
 
     // adds tan2 to the function text field
     public void addTanSquared(ActionEvent actionEvent) {
-        functionTextField.setText(functionTextField.getText() + "");
+        FunctionTextField.setText(FunctionTextField.getText() + "");
     }
 
     // adds e to the function text field
     public void addE(ActionEvent actionEvent) {
-        functionTextField.setText(functionTextField.getText() + "e^()");
+        FunctionTextField.setText(FunctionTextField.getText() + "e^()");
     }
 
     // adds pi to the function text field
     public void addPi(ActionEvent actionEvent) {
-        functionTextField.setText(functionTextField.getText() + "p");
+        FunctionTextField.setText(FunctionTextField.getText() + "p");
     }
 
     public void closeButtonClicked(ActionEvent actionEvent) {
@@ -529,12 +523,12 @@ public class MainSceneController {
 
     public void onGraphClicked(MouseEvent mouseEvent) {
         if (getLoadedResult() != null) {
-            String sep = System.getProperty("line.separator");
+            String LineBreak = System.getProperty("line.separator");
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Information about this loaded result");
             alert.setContentText(
                     "The function used in this optimisation was:"
-                            + sep + getLoadedResult().getFunctionString()
+                            + LineBreak + getLoadedResult().getFunctionString()
             );
             alert.show();
         } else {
@@ -549,10 +543,10 @@ public class MainSceneController {
     }
 
     public void updateLog() {
-        logTextArea.clear();
-        logTextArea.setText("");
+        LogTextArea.clear();
+        LogTextArea.setText("");
         for (String s : MainSceneController.log) {
-            logTextArea.setText(s);
+            LogTextArea.setText(s);
         }
     }
 }

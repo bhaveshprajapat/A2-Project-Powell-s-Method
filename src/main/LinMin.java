@@ -4,26 +4,26 @@ package main;
     Abstract class to define linmin behaviour
  */
 public abstract class LinMin {
-    private double tolerance;
-    private double bounds;
+    private double Tolerance;
+    private double Bounds;
     private Coordinate StartPoint;
-    private SearchDirection searchDirection;
-    private Coordinate finalCoordinate;
+    private SearchDirection SearchDirection;
+    private Coordinate FinalCoordinate;
 
     public double getTolerance() {
-        return tolerance;
+        return Tolerance;
     }
 
     public void setTolerance(double tolerance) {
-        this.tolerance = tolerance;
+        this.Tolerance = tolerance;
     }
 
     public double getBounds() {
-        return bounds;
+        return Bounds;
     }
 
     public void setBounds(double bounds) {
-        this.bounds = bounds;
+        this.Bounds = bounds;
     }
 
     public Coordinate getStartPoint() {
@@ -35,24 +35,24 @@ public abstract class LinMin {
     }
 
     public SearchDirection getSearchDirection() {
-        return searchDirection;
+        return SearchDirection;
     }
 
     public void setSearchDirection(SearchDirection searchDirection) {
-        this.searchDirection = searchDirection;
+        this.SearchDirection = searchDirection;
     }
 
     public Coordinate getFinalCoordinate() {
-        return finalCoordinate;
+        return FinalCoordinate;
     }
 
     public void setFinalCoordinate(Coordinate finalCoordinate) {
-        this.finalCoordinate = finalCoordinate;
+        this.FinalCoordinate = finalCoordinate;
     }
 
-    /**
+    /*
      * This method should perform a one dimensional search across the unit vector
-     * specified in searchDirection
+     * specified in SearchDirection
      */
     abstract void startSearch() throws EvaluationException;
 }

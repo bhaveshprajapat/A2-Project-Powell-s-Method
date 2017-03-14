@@ -8,48 +8,48 @@ public class BinarySearch extends LinMin {
         int BoundaryRestriction = 1;
         while (true) {
             // Create direction vectors and set their values
-            int vectorX, vectorY;
+            int VectorX, VectorY;
             boolean OptimisingByX;
-            OptimisingByX = (getSearchDirection() == SearchDirection.Vector_I);
-            vectorX = OptimisingByX ? 1 : 0;
-            vectorY = OptimisingByX ? 0 : 1;
+            OptimisingByX = (getSearchDirection() == SearchDirection.VECTOR_I);
+            VectorX = OptimisingByX ? 1 : 0;
+            VectorY = OptimisingByX ? 0 : 1;
             // Creates lower boundary
-            double lowerBoundaryXValue = PreviousCoordinate.getXValue() - (vectorX * (getBounds() / (BoundaryRestriction)));
-            double lowerBoundaryYValue = PreviousCoordinate.getYValue() - (vectorY * (getBounds() / (BoundaryRestriction)));
-            Coordinate lowerBoundary = new Coordinate(lowerBoundaryXValue, lowerBoundaryYValue);
+            double LowerBoundaryXValue = PreviousCoordinate.getXValue() - (VectorX * (getBounds() / (BoundaryRestriction)));
+            double LowerBoundaryYValue = PreviousCoordinate.getYValue() - (VectorY * (getBounds() / (BoundaryRestriction)));
+            Coordinate LowerBoundary = new Coordinate(LowerBoundaryXValue, LowerBoundaryYValue);
             // Creates upper boundary
-            double upperBoundaryXValue = PreviousCoordinate.getXValue() + (vectorX * (getBounds() / (BoundaryRestriction)));
-            double upperBoundaryYValue = PreviousCoordinate.getYValue() + (vectorY * (getBounds() / (BoundaryRestriction)));
-            Coordinate upperBoundary = new Coordinate(upperBoundaryXValue, upperBoundaryYValue);
+            double UpperBoundaryXValue = PreviousCoordinate.getXValue() + (VectorX * (getBounds() / (BoundaryRestriction)));
+            double UpperBoundaryYValue = PreviousCoordinate.getYValue() + (VectorY * (getBounds() / (BoundaryRestriction)));
+            Coordinate UpperBoundary = new Coordinate(UpperBoundaryXValue, UpperBoundaryYValue);
             // All three coordinates are evaluated
-            double zOFUpperBound = Function.evaluate(upperBoundary);
-            double zOFLowerBound = Function.evaluate(lowerBoundary);
-            double zOfCurrentPoint = Function.evaluate(getStartPoint());
+            double ZValueForUpperBoundary = Function.evaluate(UpperBoundary);
+            double ZValueForLowerBoundary = Function.evaluate(LowerBoundary);
+            double ZValueForCurrentPoint = Function.evaluate(getStartPoint());
             // Shifts upper bound if its output is highest
-            if ((zOFUpperBound > zOfCurrentPoint)
-                    && (zOFUpperBound > zOFLowerBound)) {
-                upperBoundary.setXValue(getStartPoint().getXValue());
-                upperBoundary.setYValue(getStartPoint().getYValue());
+            if ((ZValueForUpperBoundary > ZValueForCurrentPoint)
+                    && (ZValueForUpperBoundary > ZValueForLowerBoundary)) {
+                UpperBoundary.setXValue(getStartPoint().getXValue());
+                UpperBoundary.setYValue(getStartPoint().getYValue());
             }
             // Shifts lower bound if its output is highest
-            if ((zOFLowerBound > zOfCurrentPoint)
-                    && (zOFLowerBound > zOFUpperBound)) {
-                lowerBoundary.setXValue(getStartPoint().getXValue());
-                lowerBoundary.setYValue(getStartPoint().getYValue());
+            if ((ZValueForLowerBoundary > ZValueForCurrentPoint)
+                    && (ZValueForLowerBoundary > ZValueForUpperBoundary)) {
+                LowerBoundary.setXValue(getStartPoint().getXValue());
+                LowerBoundary.setYValue(getStartPoint().getYValue());
             }
-            // Creates the midpoint between the new bounds and sets the current point
-            Coordinate midpoint = new Coordinate(
-                    (upperBoundary.getXValue() + lowerBoundary.getXValue()) / 2,
-                    (upperBoundary.getYValue() + lowerBoundary.getYValue()) / 2);
+            // Creates the Midpoint between the new bounds and sets the current point
+            Coordinate Midpoint = new Coordinate(
+                    (UpperBoundary.getXValue() + LowerBoundary.getXValue()) / 2,
+                    (UpperBoundary.getYValue() + LowerBoundary.getYValue()) / 2);
             // When the current direction is optimised within the bounds, log it and change the direction
-            if (Math.abs(Function.evaluate(midpoint) - Function.evaluate(PreviousCoordinate))
+            if (Math.abs(Function.evaluate(Midpoint) - Function.evaluate(PreviousCoordinate))
                     < getTolerance()) {
-                setFinalCoordinate(midpoint);
+                setFinalCoordinate(Midpoint);
                 return;
             } else {
                 // Restrict the bounds
                 BoundaryRestriction *= 2;
-                PreviousCoordinate = new Coordinate(midpoint.getXValue(), midpoint.getYValue());
+                PreviousCoordinate = new Coordinate(Midpoint.getXValue(), Midpoint.getYValue());
             }
         }
     }

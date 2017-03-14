@@ -11,15 +11,15 @@ public class Coordinate implements Serializable {
     private double YValue;
 
     // Class Constructor
-    public Coordinate(double x_Value, double y_Value) {
-        XValue = x_Value;
-        YValue = y_Value;
+    public Coordinate(double XValue, double YValue) {
+        this.XValue = XValue;
+        this.YValue = YValue;
     }
 
     // Returns a String to describe this Coordinate Object
     @Override
     public String toString() {
-        return "Coordinate " + hashCode() + "-> X: " + getXValue() + " Y: " + getYValue();
+        return "Coordinate " + hashCode() + "-> X: " + getXValue() + " & Y: " + getYValue();
     }
 
     // Accessor method for X Value
@@ -47,7 +47,7 @@ public class Coordinate implements Serializable {
      */
     @Override
     public boolean equals(Object obj) {
-        Coordinate comparison = (Coordinate) obj;
-        return (comparison.getXValue() == getXValue()) && (comparison.getYValue() == getYValue());
+        Coordinate Comparison = (Coordinate) obj;
+        return (Comparison.getXValue() == getXValue()) && (Comparison.getYValue() == getYValue());
     }
 }

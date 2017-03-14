@@ -3,55 +3,54 @@ package main;
 public class GoldenSectionSearch extends LinMin {
     @Override
     void startSearch() throws EvaluationException {
-        Function function = new Function();
-        boolean optimisingByX = (getSearchDirection() == SearchDirection.Vector_I);
-
-        double previousZValue = function.evaluate(getStartPoint());
-        int vectorX = (getSearchDirection() == SearchDirection.Vector_I) ? 1 : 0;
-        int vectorY = (getSearchDirection() == SearchDirection.Vector_J) ? 1 : 0;
-        double lowerBoundaryXValue = getStartPoint().getXValue() - (vectorX * (getBounds()));
-        double lowerBoundaryYValue = getStartPoint().getYValue() - (vectorY * (getBounds()));
-        Coordinate lowerBound = new Coordinate(lowerBoundaryXValue, lowerBoundaryYValue);
+        // TODO write a commment
+        boolean OptimisingByX = (getSearchDirection() == SearchDirection.VECTOR_I);
+        double PreviousZValue = Function.evaluate(getStartPoint());
+        // Initialises vectors
+        int VectorX = (getSearchDirection() == SearchDirection.VECTOR_I) ? 1 : 0;
+        int VectorY = (getSearchDirection() == SearchDirection.VECTOR_J) ? 1 : 0;
+        // Create lower boundary
+        Coordinate LowerBoundary = new Coordinate(
+                getStartPoint().getXValue() - (VectorX * (getBounds())),
+                getStartPoint().getYValue() - (VectorY * (getBounds())));
         // Creates upper boundary
-        double upperBoundaryXValue = getStartPoint().getXValue() + (vectorX * (getBounds()));
-        double upperBoundaryYValue = getStartPoint().getYValue() + (vectorY * (getBounds()));
-        Coordinate upperBound = new Coordinate(upperBoundaryXValue, upperBoundaryYValue);
+        Coordinate upperBound = new Coordinate(
+                getStartPoint().getXValue() + (VectorX * (getBounds())),
+                getStartPoint().getYValue() + (VectorY * (getBounds())));
         while (true) {
-            double tau = (1 + Math.sqrt(5)) / 2;
+            double Phi = (1 + Math.sqrt(5)) / 2;
             // Create the golden sections within the boundaries
-            Coordinate goldenSection1 = new Coordinate(
-                    optimisingByX ? (upperBound.getXValue() - ((upperBound.getXValue() - lowerBound.getXValue()) / tau)) : lowerBound.getXValue(),
-                    optimisingByX ? lowerBound.getYValue() : (upperBound.getYValue() - ((upperBound.getYValue() - lowerBound.getYValue()) / tau)));
-            Coordinate goldenSection2 = new Coordinate(
-                    optimisingByX ? (lowerBound.getXValue() + ((upperBound.getXValue() - lowerBound.getXValue()) / tau)) : lowerBound.getXValue(),
-                    optimisingByX ? lowerBound.getYValue() : (lowerBound.getYValue() + ((upperBound.getYValue() - lowerBound.getYValue()) / tau)));
+            Coordinate GoldenSection1 = new Coordinate(
+                    OptimisingByX ? (upperBound.getXValue() - ((upperBound.getXValue() - LowerBoundary.getXValue()) / Phi)) : LowerBoundary.getXValue(),
+                    OptimisingByX ? LowerBoundary.getYValue() : (upperBound.getYValue() - ((upperBound.getYValue() - LowerBoundary.getYValue()) / Phi)));
+            Coordinate GoldenSection2 = new Coordinate(
+                    OptimisingByX ? (LowerBoundary.getXValue() + ((upperBound.getXValue() - LowerBoundary.getXValue()) / Phi)) : LowerBoundary.getXValue(),
+                    OptimisingByX ? LowerBoundary.getYValue() : (LowerBoundary.getYValue() + ((upperBound.getYValue() - LowerBoundary.getYValue()) / Phi)));
             // Evaluate each golden section coordinate
-            // Evaluate each golden section coordinate
-            double zOfGoldenSection1 = function.evaluate(goldenSection1);
-            double zOfGoldenSection2 = function.evaluate(goldenSection2);
-            Coordinate newLowerBound, newUpperBound;
+            double FOfGoldenSection1 = Function.evaluate(GoldenSection1);
+            double FOfGoldenSection2 = Function.evaluate(GoldenSection2);
+            Coordinate NewLowerBound, NewUpperBound;
             // If the second golden section is highest, set the upper bound to the second section
-            if (zOfGoldenSection1 < zOfGoldenSection2) {
-                newLowerBound = new Coordinate(lowerBound.getXValue(), lowerBound.getYValue());
-                newUpperBound = new Coordinate(goldenSection2.getXValue(), goldenSection2.getYValue());
+            if (FOfGoldenSection1 < FOfGoldenSection2) {
+                NewLowerBound = new Coordinate(LowerBoundary.getXValue(), LowerBoundary.getYValue());
+                NewUpperBound = new Coordinate(GoldenSection2.getXValue(), GoldenSection2.getYValue());
             } else {
                 // Otherwise set the lower bound to the first section
-                newLowerBound = new Coordinate(goldenSection1.getXValue(), goldenSection1.getYValue());
-                newUpperBound = new Coordinate(upperBound.getXValue(), upperBound.getYValue());
+                NewLowerBound = new Coordinate(GoldenSection1.getXValue(), GoldenSection1.getYValue());
+                NewUpperBound = new Coordinate(upperBound.getXValue(), upperBound.getYValue());
             }
             // Finds and creates the midpoint
-            Coordinate midpoint = new Coordinate((newLowerBound.getXValue() + newUpperBound.getXValue()) / 2, (newLowerBound.getYValue() + newUpperBound.getYValue()) / 2);
-        /*
-            If a previous z value is provided, evaluate the tolerance and exit if the tolerance is met
-            Otherwise, recurse this function with restricted bounds
-         */
-            if (Math.abs(previousZValue - function.evaluate(midpoint)) < getTolerance()) {
-                setFinalCoordinate(midpoint);
+            Coordinate Midpoint = new Coordinate((NewLowerBound.getXValue() + NewUpperBound.getXValue()) / 2, (NewLowerBound.getYValue() + NewUpperBound.getYValue()) / 2);
+
+            if (Math.abs(PreviousZValue - Function.evaluate(Midpoint)) < getTolerance()) {
+                // If the stopping tolerance is met return with the final coordinate
+                setFinalCoordinate(Midpoint);
                 return;
             } else {
-                lowerBound = newLowerBound;
-                upperBound = newUpperBound;
-                previousZValue = function.evaluate(midpoint);
+                // Restrict the boundaries, set the previous function value and reiterate
+                LowerBoundary = NewLowerBound;
+                upperBound = NewUpperBound;
+                PreviousZValue = Function.evaluate(Midpoint);
             }
         }
     }

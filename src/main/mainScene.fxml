@@ -34,7 +34,7 @@
         </Menu>
     </MenuBar>
     <!-- Split pane has two horizontal components which can be resized as necessary -->
-    <SplitPane fx:id="splitPane" dividerPositions="0.5" prefHeight="160.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+    <SplitPane dividerPositions="0.5" prefHeight="160.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
         <!-- First split pane component -->
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
             <VBox prefHeight="373.0" prefWidth="296.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
@@ -44,7 +44,7 @@
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                     </VBox.margin>
                 </Label>
-                <TextField fx:id="functionTextField">
+                <TextField fx:id="FunctionTextField">
                     <VBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                     </VBox.margin>
@@ -68,12 +68,12 @@
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
                     </rowConstraints>
-                    <TextField fx:id="startPointXTextField" GridPane.rowIndex="2">
+                    <TextField fx:id="StartPointXTextField" GridPane.rowIndex="2">
                         <GridPane.margin>
                             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                         </GridPane.margin>
                     </TextField>
-                    <TextField fx:id="startPointYTextField" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                    <TextField fx:id="StartPointYTextField" GridPane.columnIndex="1" GridPane.rowIndex="2">
                         <GridPane.margin>
                             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                         </GridPane.margin>
@@ -98,7 +98,7 @@
                             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                         </GridPane.margin>
                     </Label>
-                    <TextField fx:id="boundsTextField" GridPane.rowIndex="4">
+                    <TextField fx:id="BoundsTextField" GridPane.rowIndex="4">
                         <GridPane.margin>
                             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                         </GridPane.margin>
@@ -115,7 +115,7 @@
                             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                         </GridPane.margin>
                     </Label>
-                    <Label fx:id="searchAlgorithmIndicator" text="Binary Search (default)" GridPane.rowIndex="6">
+                    <Label fx:id="SearchAlgorithmIndicator" text="Binary Search (default)" GridPane.rowIndex="6">
                         <GridPane.margin>
                             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                         </GridPane.margin>
@@ -190,7 +190,7 @@
                             <Insets bottom="1.0" left="1.0" right="1.0" top="1.0"/>
                         </GridPane.margin>
                     </HBox>
-                    <Slider fx:id="toleranceSlider" blockIncrement="1.0" majorTickUnit="1.0" max="10.0"
+                    <Slider fx:id="ToleranceSlider" blockIncrement="1.0" majorTickUnit="1.0" max="10.0"
                             minorTickCount="1" showTickLabels="true" showTickMarks="true" snapToTicks="true"
                             GridPane.columnIndex="1" GridPane.rowIndex="4">
                         <GridPane.margin>
@@ -202,12 +202,12 @@
                         <Insets/>
                     </VBox.margin>
                 </GridPane>
-                <ProgressIndicator fx:id="progressIndicator" disable="true" progress="1.0" visible="false">
+                <ProgressIndicator fx:id="ProgressIndicator" disable="true" progress="1.0" visible="false">
                     <VBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                     </VBox.margin>
                 </ProgressIndicator>
-                <TextArea fx:id="logTextArea" editable="false" prefHeight="213.0" prefWidth="362.0"
+                <TextArea fx:id="LogTextArea" editable="false" prefHeight="213.0" prefWidth="362.0"
                           text="Waiting for user action..." wrapText="true" VBox.vgrow="ALWAYS">
                     <VBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
@@ -255,14 +255,14 @@
                             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                         </padding>
                     </CheckBox>
-                    <CheckBox fx:id="auto2DCheckBox" mnemonicParsing="false" selected="true" text="AUTO2D">
+                    <CheckBox fx:id="AUTO2DCheckBox" mnemonicParsing="false" selected="true" text="AUTO2D">
                         <padding>
                             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                         </padding>
                     </CheckBox>
                 </ToolBar>
                 <!-- Scatter graph that shows the results from an optimisation -->
-                <ScatterChart fx:id="mainSceneGraph" minWidth="0.0" onMouseClicked="#onGraphClicked" opacity="0.25"
+                <ScatterChart fx:id="MainSceneGraph" minWidth="0.0" onMouseClicked="#onGraphClicked" opacity="0.25"
                               title="No results to show" VBox.vgrow="ALWAYS">
                     <xAxis>
                         <NumberAxis forceZeroInRange="false" label="x" side="BOTTOM"/>
