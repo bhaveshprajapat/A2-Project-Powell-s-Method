@@ -123,13 +123,13 @@ public class Function implements Serializable {
         String[] Tokens = getPostfixExpression().split(",");
         double LeftOperandDouble, RightOperandDouble;
         for (String TokenStepper : Tokens) {
-            // if the current token is an operator pop items off the stack
+            // If the current token is an operator pop items off the stack
             if (isOperator(TokenStepper)) {
                 String LeftOperand, RightOperand;
-                // pop the first operand off the stack
+                //Pop the first operand off the stack
                 RightOperand = OperandStack.pop();
                 try {
-                    // attempt to pop a second item off of the stack
+                    // Attempt to pop a second item off of the stack
                     LeftOperand = OperandStack.pop();
                 } catch (EmptyStackException emptyStackException) {
                     LeftOperand = "0";
@@ -208,11 +208,11 @@ public class Function implements Serializable {
                         break;
                 }
             } else {
-                // current item is a operand, so push it to the stack
+                // Current item is a operand, so push it to the stack
                 OperandStack.push(TokenStepper);
             }
         }
-        // return the evaluation
+        // Return the evaluation
         return Double.valueOf(OperandStack.pop());
     }
 
