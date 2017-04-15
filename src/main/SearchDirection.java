@@ -1,7 +1,7 @@
 package main;
 
 /*
-    Enum to represent a Search Direction
+    Enum represents the vectors I and J, which are the LinMin search directions
  */
 public enum SearchDirection {
     VECTOR_I,

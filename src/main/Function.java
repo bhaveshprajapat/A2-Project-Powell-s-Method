@@ -68,7 +68,7 @@ public class Function implements Serializable {
         return peekPrecedence >= currentTokenPrecedence;
     }
 
-    // Return int precedence values for each Token
+    // Return integer precedence values for each Token
     private static int getPrecedenceForToken(String Token) {
         switch (Token) {
             case "+":
@@ -122,10 +122,10 @@ public class Function implements Serializable {
         Stack<String> OperandStack = new Stack<>();
         String[] Tokens = getPostfixExpression().split(",");
         double LeftOperandDouble, RightOperandDouble;
+        String LeftOperand, RightOperand;
         for (String TokenStepper : Tokens) {
             // If the current token is an operator pop items off the stack
             if (isOperator(TokenStepper)) {
-                String LeftOperand, RightOperand;
                 //Pop the first operand off the stack
                 RightOperand = OperandStack.pop();
                 try {
@@ -176,11 +176,11 @@ public class Function implements Serializable {
                             RightOperandDouble = Math.PI;
                             break;
                         default:
-                            // a letter has been used that has no known value
+                            // A letter has been used that has no known value
                             throw new EvaluationException("Unrecognised operand: " + LeftOperand);
                     }
                 }
-                // Perform the operator on the two popped stack items
+                // Perform operation on two popped stack items
                 switch (TokenStepper) {
                     case "+":
                         OperandStack.push(String.valueOf(LeftOperandDouble + RightOperandDouble));
@@ -212,7 +212,7 @@ public class Function implements Serializable {
                 OperandStack.push(TokenStepper);
             }
         }
-        // Return the evaluation
+        // Return final value in the stack
         return Double.valueOf(OperandStack.pop());
     }
 
@@ -233,16 +233,22 @@ public class Function implements Serializable {
         // Since unary minus could be counted as an operator, we need to check for it
         for (int Stepper = 0; Stepper < UncheckedTokenArray.length; Stepper++) {
             if (Stepper > 0) {
-                // Two consecutive operators test
+                // If there is an operator followed by a '-', then the right operator must be negative
                 if ("-".equals(UncheckedTokenArray[Stepper]) && isOperator(UncheckedTokenArray[Stepper - 1])) {
+                    // No need to keep a value in this space
                     UncheckedTokenArray[Stepper] = "";
+                    // Prefix the minus sign to the adjacent array value
                     UncheckedTokenArray[Stepper + 1] = "-" + UncheckedTokenArray[Stepper + 1];
-                    // Current token is obsolete
                     continue;
                 }
+                // Check for any omitted multiplication signs before brackets
+                if ("(".equals(UncheckedTokenArray[Stepper]) && !isOperator(UncheckedTokenArray[Stepper - 1])) {
+                    CheckedTokensList.add("*");
+                }
             }
+
             if (Stepper == 0) {
-                // '-' at startSearch test
+                // Tests for a '-' at the beginning of the expression
                 if ("-".equals(UncheckedTokenArray[Stepper])) {
                     UncheckedTokenArray[Stepper + 1] = "-" + UncheckedTokenArray[Stepper + 1];
                     // Current token is obsolete

@@ -19,7 +19,7 @@ public class Coordinate implements Serializable {
     // Returns a String to describe this Coordinate Object
     @Override
     public String toString() {
-        return "Coordinate " + hashCode() + "-> X: " + getXValue() + " & Y: " + getYValue();
+        return "Coordinate " + "-> X: " + getXValue() + " & Y: " + getYValue();
     }
 
     // Accessor method for X Value

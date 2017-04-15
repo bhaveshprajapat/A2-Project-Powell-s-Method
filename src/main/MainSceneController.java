@@ -32,8 +32,8 @@ public class MainSceneController {
     public Slider ToleranceSlider;
     public CheckBox AUTO2DCheckBox;
     private SearchMethod AlgorithmToUse = SearchMethod.BINARY_SEARCH;
-    private PowellMethod runResult;
-    private PowellMethod loadedResult;
+    private PowellMethod RunResult;
+    private PowellMethod LoadedResult;
     private PowellMethod powellMethod;
 
     public static ArrayList<String> getLog() {
@@ -163,7 +163,7 @@ public class MainSceneController {
                 file = new File(file.getPath() + ".pmr");
             }
             /*
-                Writes out the runResult object to the file specified.
+                Writes out the RunResult object to the file specified.
             */
             try {
                 FileOutputStream fileOutputStream = new FileOutputStream(file);
@@ -271,13 +271,13 @@ public class MainSceneController {
 
     public void onRunButtonClicked(ActionEvent actionEvent) {
         if (powellMethod != null) {
-            if (powellMethod.getCancelled()) {
+            if (powellMethod.isThreadStopped()) {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("Cancelled.");
                 alert.showAndWait();
             }
             if (powellMethod.isAlive()) {
-                powellMethod.setStopThreadFlag();
+                powellMethod.setThreadStopped();
                 try {
                     powellMethod.join();
                 } catch (InterruptedException e) {
@@ -304,7 +304,11 @@ public class MainSceneController {
             ProgressIndicator.setProgress(0);
             return;
         }
-        Function.setInfixExpression(FunctionTextField.getText());
+        String ParseSine = FunctionTextField.getText().replaceAll("sin", "s");
+        String ParseCos = ParseSine.replaceAll("cos", "c");
+        String ParsePi = ParseCos.replaceAll("π", "p");
+        String ParseTan = ParsePi.replaceAll("tan", "t");
+        Function.setInfixExpression(ParseTan);
         double StartPointX;
         double StartPointY;
         double Tolerance = Math.pow(0.1, ToleranceSlider.getValue());
@@ -359,7 +363,7 @@ public class MainSceneController {
         powellMethod = new PowellMethod(Tolerance, Bounds, new Coordinate(StartPointX, StartPointY), AlgorithmToUse);
         powellMethod.start();
         FutureTask<Void> UIUpdate = new FutureTask<>(() -> {
-            if (!powellMethod.isFatalExceptionOccurred() && !powellMethod.isStopThreadFlag()) {
+            if (!powellMethod.isFatalExceptionOccurred() && !powellMethod.isThreadStopped()) {
                 if (!LayerDataCheckbox.isSelected()) {
                     MainSceneGraph.getData().clear();
                 }
@@ -368,7 +372,7 @@ public class MainSceneController {
                 ProgressIndicator.setProgress(1);
 
                 updateLog();
-                if (powellMethod.getCancelled()) {
+                if (powellMethod.isThreadStopped()) {
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("Cancelled.");
                     alert.show();
@@ -418,22 +422,22 @@ public class MainSceneController {
 
     // loaded result getter
     private PowellMethod getLoadedResult() {
-        return loadedResult;
+        return LoadedResult;
     }
 
     // loaded result setter
     private void setLoadedResult(PowellMethod loadedResult) {
-        this.loadedResult = loadedResult;
+        this.LoadedResult = loadedResult;
     }
 
     // run result getter
     private PowellMethod getRunResult() {
-        return runResult;
+        return RunResult;
     }
 
     // run result setter
     private void setRunResult(PowellMethod runResult) {
-        this.runResult = runResult;
+        this.RunResult = runResult;
     }
 
     //Changes the function text field to the Booth function
@@ -446,51 +450,44 @@ public class MainSceneController {
         FunctionTextField.setText("0.26*(x^2 + y^2) - 0.48*x*y");
     }
 
-    public void twoDimensionalGraphMode(ActionEvent actionEvent) {
-        MainSceneGraph.getData().clear();
-        getLoadedResult().runTwoDimensionAdjustment();
-        updateGraphInMainWindow(getLoadedResult());
-
-    }
-
     //Changes the function text field to the McCormick function
     public void setToMcCormickFunction() {
-        FunctionTextField.setText("(x+y)s1 + (x-y)^2 -1.5*x+2.5*y+1");
+        FunctionTextField.setText("(x+y)sin1 + (x-y)^2 -1.5*x+2.5*y+1");
     }
 
     //Changes the function text field to the Levi function
     public void setToLeviFunctionN13() {
-        FunctionTextField.setText("(3*p*x)s2+((x-1)^2)*(1+(3*p*y)s2)+((y-1)^2)*(1+(2*p*y)s2)");
+        FunctionTextField.setText("(3*p*x)sin2+((x-1)^2)*(1+(3*p*y)sin2)+((y-1)^2)*(1+(2*p*y)sin2)");
     }
 
     //adds sin to the text field
     public void addSin(ActionEvent actionEvent) {
-        FunctionTextField.setText(FunctionTextField.getText() + "()s1");
+        FunctionTextField.setText(FunctionTextField.getText() + "()sin1");
     }
 
     //adds cos to the text field
     public void AddCos(ActionEvent actionEvent) {
-        FunctionTextField.setText(FunctionTextField.getText() + "()c1");
+        FunctionTextField.setText(FunctionTextField.getText() + "()cos1");
     }
 
     // adds tan to the text field
     public void AddTan(ActionEvent actionEvent) {
-        FunctionTextField.setText(FunctionTextField.getText() + "()t1");
+        FunctionTextField.setText(FunctionTextField.getText() + "()tan1");
     }
 
     // adds sin2 to the text field
     public void addSinSquared(ActionEvent actionEvent) {
-        FunctionTextField.setText(FunctionTextField.getText() + "()s2");
+        FunctionTextField.setText(FunctionTextField.getText() + "()sin2");
     }
 
     // adds cos2 to the function text field
     public void addCosSquared(ActionEvent actionEvent) {
-        FunctionTextField.setText(FunctionTextField.getText() + "()c2");
+        FunctionTextField.setText(FunctionTextField.getText() + "()cos2");
     }
 
     // adds tan2 to the function text field
     public void addTanSquared(ActionEvent actionEvent) {
-        FunctionTextField.setText(FunctionTextField.getText() + "");
+        FunctionTextField.setText(FunctionTextField.getText() + "()tan2");
     }
 
     // adds e to the function text field
@@ -500,7 +497,7 @@ public class MainSceneController {
 
     // adds pi to the function text field
     public void addPi(ActionEvent actionEvent) {
-        FunctionTextField.setText(FunctionTextField.getText() + "p");
+        FunctionTextField.setText(FunctionTextField.getText() + "π");
     }
 
     public void closeButtonClicked(ActionEvent actionEvent) {
@@ -548,5 +545,11 @@ public class MainSceneController {
         for (String s : MainSceneController.log) {
             LogTextArea.setText(s);
         }
+    }
+
+    public void clearResults(ActionEvent actionEvent) {
+        MainSceneGraph.getData().clear();
+        MainSceneGraph.setTitle("No results to show");
+        MainSceneGraph.setOpacity(0.25);
     }
 }

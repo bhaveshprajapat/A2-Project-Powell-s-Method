@@ -7,18 +7,18 @@ import java.util.ArrayList;
     Powell Method Thread Class that can be written to a binary file
  */
 public class PowellMethod extends Thread implements Serializable {
-    // Fields
+    // Private fields
     private static final long serialVersionUID = -4101739456805897681L;
     private double Tolerance;
     private double Bounds;
     private Coordinate StartPoint;
-    private boolean FatalExceptionOccurred, Cancelled;
+    private boolean FatalExceptionOccurred;
     private transient LinMin linMin;
     private ArrayList<Coordinate> UnitVectorSearchList = new ArrayList<>();
     private ArrayList<Coordinate> ConjugateDirectionSearchList = new ArrayList<>();
     private Coordinate FinalCoordinate;
-    private transient PowellMethod.ExponentialSearch ExponentialSearch;
-    private volatile boolean StopThreadFlag;
+    private volatile boolean ThreadStoppedFlag;
+
     // Class constructor
     public PowellMethod(double Tolerance, double Bounds, Coordinate StartPoint, SearchMethod SearchMethod) {
         this.Tolerance = Tolerance;
@@ -52,7 +52,7 @@ public class PowellMethod extends Thread implements Serializable {
         return StartPoint;
     }
 
-    // startSearch method for powell method search that overrides startSearch in java.lang.Thread
+    // startSearch method for powell method search that overrides startSearch in Thread
     @Override
     public synchronized void start() {
         // Call to super method for threading
@@ -67,8 +67,7 @@ public class PowellMethod extends Thread implements Serializable {
         getUnitVectorSearchList().add(getStartPoint());
         // Loop over linmin
         while (true) {
-            if (StopThreadFlag) {
-                Cancelled = true;
+            if (ThreadStoppedFlag) {
                 return;
             }
             // Set up the linmin object with the values passed in to this class
@@ -86,12 +85,11 @@ public class PowellMethod extends Thread implements Serializable {
                 this.linMin.startSearch();
             } catch (EvaluationException CaughtException) {
                 // If anything adverse occurs, exit the thread
-                setFatalExceptionOccured();
+                setFatalExceptionOccurred();
                 return;
             }
             // Check for a stop, since linmin was a blocking action
-            if (StopThreadFlag) {
-                Cancelled = true;
+            if (ThreadStoppedFlag) {
                 return;
             }
             // Adds linmin result to list
@@ -113,7 +111,7 @@ public class PowellMethod extends Thread implements Serializable {
                 }
             } catch (EvaluationException CaughtException) {
                 // Some fatal error occured
-                setFatalExceptionOccured();
+                setFatalExceptionOccurred();
                 return;
             }
             // Exit the method
@@ -121,44 +119,42 @@ public class PowellMethod extends Thread implements Serializable {
                 break;
             }
         }
-        if (StopThreadFlag) {
-            Cancelled = true;
+        if (ThreadStoppedFlag) {
             return;
         }
 
         // initialise exponential search
         Coordinate NewStartPoint = getUnitVectorSearchList().get(getUnitVectorSearchList().size() - 1);
-        this.ExponentialSearch = new ExponentialSearch(NewStartPoint, getTolerance());
-        this.ExponentialSearch.setVector(getUnitVectorSearchList().get(getUnitVectorSearchList().size() - 3), NewStartPoint);
-        MainSceneController.getLog().add("VECTOR" + this.ExponentialSearch.getXVector() + " " + this.ExponentialSearch.getYVector());
-        if (this.ExponentialSearch.getStartPoint().equals(getStartPoint())) {
+        PowellMethod.ExponentialSearch exponentialSearch = new ExponentialSearch(NewStartPoint, getTolerance());
+        exponentialSearch.setVector(getUnitVectorSearchList().get(getUnitVectorSearchList().size() - 3), NewStartPoint);
+        MainSceneController.getLog().add("VECTOR" + exponentialSearch.getXVector() + " " + exponentialSearch.getYVector());
+        if (exponentialSearch.getStartPoint().equals(getStartPoint())) {
             setFinalCoordinate(getStartPoint());
             MainSceneController.getLog().add("No conjugate direction optimisation performed, already at minimum.");
             MainSceneController.getLog().add("The method may have been caught inside a local minimum, try higher bounds in this event.");
             return;
         }
-        if ((this.ExponentialSearch.getXVector() == 0D) && (this.ExponentialSearch.getYVector() == 0D)) {
+        if ((exponentialSearch.getXVector() == 0D) && (exponentialSearch.getYVector() == 0D)) {
             setFinalCoordinate(getStartPoint());
             MainSceneController.getLog().add("No conjugate direction optimisation performed, already at minimum.");
             MainSceneController.getLog().add("The method may have been caught inside a local minimum, try higher bounds in this event.");
             return;
         }
-        if (StopThreadFlag) {
-            Cancelled = true;
+        if (ThreadStoppedFlag) {
+            setThreadStopped();
             return;
         }
         try {
-            this.ExponentialSearch.startSearch();
+            exponentialSearch.startSearch();
         } catch (EvaluationException CaughtException) {
             // catch any errors that occur during running
-            setFatalExceptionOccured();
+            setFatalExceptionOccurred();
         }
-        if (StopThreadFlag) {
-            Cancelled = true;
+        if (ThreadStoppedFlag) {
             return;
         }
-        setConjugateDirectionSearchList(this.ExponentialSearch.getOptimisedCoordinateList());
-        setFinalCoordinate(this.ExponentialSearch.getFinalCoordinate());
+        setConjugateDirectionSearchList(exponentialSearch.getOptimisedCoordinateList());
+        setFinalCoordinate(exponentialSearch.getFinalCoordinate());
 
     }
 
@@ -185,11 +181,6 @@ public class PowellMethod extends Thread implements Serializable {
         this.linMin = linMin;
     }
 
-    // fatal exception boolean Mutator method method
-    public void setFatalExceptionOccured() {
-        setFatalExceptionOccurred();
-    }
-
     // Accessor method for final coordinate
     public Coordinate getFinalCoordinate() {
         return FinalCoordinate;
@@ -205,20 +196,22 @@ public class PowellMethod extends Thread implements Serializable {
         return Function.getInfixExpression();
     }
 
+    // Accessor method for fatal exception boolean
     public boolean isFatalExceptionOccurred() {
         return FatalExceptionOccurred;
     }
 
+    // Mutator method for fatal exception
     public void setFatalExceptionOccurred() {
         FatalExceptionOccurred = true;
     }
 
-    public boolean isStopThreadFlag() {
-        return StopThreadFlag;
+    public boolean isThreadStopped() {
+        return ThreadStoppedFlag;
     }
 
-    public void setStopThreadFlag() {
-        this.StopThreadFlag = true;
+    public void setThreadStopped() {
+        this.ThreadStoppedFlag = true;
     }
 
     public void runTwoDimensionAdjustment() {
@@ -226,12 +219,12 @@ public class PowellMethod extends Thread implements Serializable {
         ArrayList<Coordinate> NewConjugateList = new ArrayList<>();
         try {
             for (Coordinate CoordinateStepper : getConjugateDirectionSearchList()) {
-                Coordinate d = new Coordinate(CoordinateStepper.getXValue(), Function.evaluate(new Coordinate(CoordinateStepper.getXValue(), 0D)));
-                NewUnitVectorList.add(d);
+                Coordinate newCoordinate = new Coordinate(CoordinateStepper.getXValue(), Function.evaluate(new Coordinate(CoordinateStepper.getXValue(), 0D)));
+                NewUnitVectorList.add(newCoordinate);
             }
             for (Coordinate CoordinateStepper : getUnitVectorSearchList()) {
-                Coordinate e = new Coordinate(CoordinateStepper.getXValue(), Function.evaluate(new Coordinate(CoordinateStepper.getXValue(), 0D)));
-                NewConjugateList.add(e);
+                Coordinate newCoordinate = new Coordinate(CoordinateStepper.getXValue(), Function.evaluate(new Coordinate(CoordinateStepper.getXValue(), 0D)));
+                NewConjugateList.add(newCoordinate);
             }
             Coordinate FinalCoordinate = getFinalCoordinate();
             setFinalCoordinate(new Coordinate(FinalCoordinate.getXValue(), Function.evaluate(new Coordinate(FinalCoordinate.getXValue(), 0D))));
@@ -239,18 +232,12 @@ public class PowellMethod extends Thread implements Serializable {
             setUnitVectorSearchList(NewUnitVectorList);
         } catch (EvaluationException CaughtException) {
             MainSceneController.getLog().add(CaughtException.getMessage());
-
-
         }
-    }
-
-    public boolean getCancelled() {
-        return Cancelled;
     }
 
     // Exponential Search Inner Class
     public class ExponentialSearch {
-
+        // Private Fields
         private Coordinate StartPoint;
         private double XVector;
         private double YVector;
