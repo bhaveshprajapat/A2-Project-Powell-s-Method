@@ -176,8 +176,8 @@ public class MainSceneController {
                 fileOutputStream.close();
             } catch (IOException e) {
                 Alert IOAlert = new Alert(Alert.AlertType.ERROR);
-                IOAlert.setTitle("Error during file write!");
-                IOAlert.setHeaderText("Some error occurred during the file write process. For more information see below...");
+                IOAlert.setTitle("An error occured during the file write!");
+                IOAlert.setHeaderText("For more information see below...");
                 IOAlert.setContentText(e.getLocalizedMessage());
                 IOAlert.show();
             }
@@ -189,7 +189,7 @@ public class MainSceneController {
         MainSceneGraph.setOpacity(1);
         // Open a file chooser to select a file
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save Results to PMR File");
+        fileChooser.setTitle("Save Results to a PMR File");
         // Set extension filter
         FileChooser.ExtensionFilter extFilter =
                 new FileChooser.ExtensionFilter("Powell's Method Result Files (*.pmr)", "*.pmr");
@@ -212,8 +212,8 @@ public class MainSceneController {
             updateGraphInMainWindow(getLoadedResult());
         } catch (IOException | ClassNotFoundException CaughtException) {
             Alert IOAlert = new Alert(Alert.AlertType.ERROR);
-            IOAlert.setTitle("Error during file opening!");
-            IOAlert.setHeaderText("Some error occurred during the file opening process. For more information see below...");
+            IOAlert.setTitle("An error occured while opening the file!");
+            IOAlert.setHeaderText("For more information see below...");
             IOAlert.setContentText(CaughtException.getLocalizedMessage());
             IOAlert.show();
         }

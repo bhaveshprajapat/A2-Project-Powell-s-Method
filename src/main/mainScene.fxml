@@ -51,7 +51,7 @@
                     </VBox.margin>
                     <tooltip>
                         <Tooltip
-                                text="Input the function, f(x,y), to use. You can use the functions below. You must include all operators, e.g. multiplication before brackets."
+                                text="Input the function, f(x,y), to use. You can use the buttons below. You must include all operators, e.g. multiplication before brackets."
                                 wrapText="true"/>
                     </tooltip>
                 </TextField>

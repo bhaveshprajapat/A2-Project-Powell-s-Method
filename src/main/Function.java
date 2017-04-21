@@ -42,6 +42,8 @@ public class Function implements Serializable {
                     }
                 }
                 OperatorStack.push(currentToken);
+            } else {
+                MainSceneController.getLog().add("Unrecognised token found in function: " + currentToken + "... ignored.");
             }
         }
         while (!OperatorStack.isEmpty()) {
@@ -97,7 +99,7 @@ public class Function implements Serializable {
 
     // Is the parameterised token an OPERAND?
     private static boolean checkIfOperand(String currentToken) {
-        return currentToken.matches("(?:\\d*\\.?\\d+)|[xype]|pi");
+        return currentToken.matches("(?:\\d*\\.?\\d+)|[xype]");
     }
 
     // Split up a string using a Regular Expression to get all of the operands and operators separate.
@@ -132,7 +134,7 @@ public class Function implements Serializable {
                     // Attempt to pop a second item off of the stack
                     LeftOperand = OperandStack.pop();
                 } catch (EmptyStackException emptyStackException) {
-                    LeftOperand = "0";
+                    throw new EvaluationException("Expression has too many operands");
                 }
                 // Attempt numeric conversion
                 try {
@@ -154,6 +156,7 @@ public class Function implements Serializable {
                             break;
                         default:
                             // a letter has been used that has no known value
+                            System.out.println("ERR");
                             throw new EvaluationException("Unrecognised operand: " + LeftOperand);
                     }
                 }
@@ -177,6 +180,7 @@ public class Function implements Serializable {
                             break;
                         default:
                             // A letter has been used that has no known value
+                            System.out.println("ERR");
                             throw new EvaluationException("Unrecognised operand: " + LeftOperand);
                     }
                 }
