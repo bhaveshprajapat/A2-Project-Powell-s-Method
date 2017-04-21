@@ -25,6 +25,7 @@
             <MenuItem disable="true" mnemonicParsing="false"
                       text="Select any of these pre-built function to input in to the function field"/>
             <SeparatorMenuItem mnemonicParsing="false"/>
+            <MenuItem mnemonicParsing="false" onAction="#setToParaboloid" text="Paraboloid Function"/>
             <MenuItem mnemonicParsing="false" onAction="#setToMatyasFunction" text="Matyas Function"/>
             <MenuItem mnemonicParsing="false" onAction="#setToBoothFunction" text="Booth Function"/>
             <MenuItem mnemonicParsing="false" onAction="#setToMcCormickFunction" text="McCormick Function"/>
@@ -243,7 +244,7 @@
                                       text="Save this set of results"/>
                             <MenuItem mnemonicParsing="false" onAction="#loadResultsFromFile"
                                       text="Load results from file"/>
-                            <MenuItem mnemonicParsing="false" onAction="#loadTheseResultsInNewWindow"
+                            <MenuItem mnemonicParsing="false" onAction="#loadCurrentResultsInNewWindow"
                                       text="Load these results in a new window"/>
                             <MenuItem mnemonicParsing="false" onAction="#loadResultsFromFileInNewWindow"
                                       text="Load results from file in a new window"/>

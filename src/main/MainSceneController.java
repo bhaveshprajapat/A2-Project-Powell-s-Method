@@ -14,6 +14,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.FutureTask;
@@ -219,7 +220,7 @@ public class MainSceneController {
         }
     }
 
-    public void loadTheseResultsInNewWindow(ActionEvent actionEvent) {
+    public void loadCurrentResultsInNewWindow(ActionEvent actionEvent) {
         // Un-grey out the graph
         MainSceneGraph.setOpacity(1);
         // Loads the coordinate list from the loaded result
@@ -270,6 +271,7 @@ public class MainSceneController {
     }
 
     public void onRunButtonClicked(ActionEvent actionEvent) {
+        LinMin.setCounter(0);
         if (powellMethod != null) {
             if (powellMethod.isThreadStopped()) {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -363,15 +365,25 @@ public class MainSceneController {
         powellMethod = new PowellMethod(Tolerance, Bounds, new Coordinate(StartPointX, StartPointY), AlgorithmToUse);
         powellMethod.start();
         FutureTask<Void> UIUpdate = new FutureTask<>(() -> {
-            if (!powellMethod.isFatalExceptionOccurred() && !powellMethod.isThreadStopped()) {
+            if (!powellMethod.isEvaluationExceptionOccured() && !powellMethod.isThreadStopped()) {
+                getLog().add("Optimisation complete at :" + LocalDateTime.now());
+                getLog().add("Number of distinct optimisations required: " + powellMethod.getOptimisationCounter());
+                updateLog();
                 if (!LayerDataCheckbox.isSelected()) {
                     MainSceneGraph.getData().clear();
                 }
                 setRunResult(powellMethod);
                 setLoadedResult(powellMethod);
                 ProgressIndicator.setProgress(1);
-
-                updateLog();
+                if (powellMethod.getExponentialSearch().isDivergenceDetected()) {
+                    Alert DivergenceAlert = new Alert(Alert.AlertType.INFORMATION);
+                    DivergenceAlert.setTitle("Divergence Detected");
+                    DivergenceAlert.setHeaderText("Divergence Detected");
+                    DivergenceAlert.setContentText("See the log for more information");
+                    DivergenceAlert.show();
+                    getLog().add("While performing the exponential vector search, the algorithm diverged far from the expected search area. The graph should illustrate this. Increment the bounds to increase the search area if necessary.");
+                    updateLog();
+                }
                 if (powellMethod.isThreadStopped()) {
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("Cancelled.");
@@ -388,11 +400,24 @@ public class MainSceneController {
                 powellMethod = null;
             } else {
                 Alert CancellationDialog = new Alert(Alert.AlertType.INFORMATION);
-                CancellationDialog.setTitle("Optimisation cancelled on user request.");
+                CancellationDialog.setTitle("Something went wrong...");
+                CancellationDialog.setContentText("Please see the log for more information.");
+                String errorString;
+                if (powellMethod.isThreadStopped()) {
+                    errorString = "The current optimisation was stopped";
+                    getLog().add(errorString);
+                    updateLog();
+                }
+                if (powellMethod.isEvaluationExceptionOccured()) {
+                    errorString = "Function could not be evaluated - please check for errors in the function";
+                    getLog().add(errorString);
+                    updateLog();
+                }
                 CancellationDialog.showAndWait();
                 setRunResult(null);
                 setLoadedResult(null);
             }
+
         }, null);
         Platform.runLater(UIUpdate);
 
@@ -443,6 +468,11 @@ public class MainSceneController {
     //Changes the function text field to the Booth function
     public void setToBoothFunction(ActionEvent actionEvent) {
         FunctionTextField.setText("(x+2*y-7)^2 + (2*x+y-5)^2");
+    }
+
+    //Changes the function text field to a 3D Paraboloid
+    public void setToParaboloid(ActionEvent actionEvent) {
+        FunctionTextField.setText("(x+2)^2 + (y-2)^2");
     }
 
     //Changes the function text field to the Matyas function
@@ -540,10 +570,11 @@ public class MainSceneController {
     }
 
     public void updateLog() {
+        String lineSeparator = System.getProperty("line.separator");
         LogTextArea.clear();
         LogTextArea.setText("");
-        for (String s : MainSceneController.log) {
-            LogTextArea.setText(s);
+        for (String stepper : MainSceneController.log) {
+            LogTextArea.setText(LogTextArea.getText() + lineSeparator + stepper);
         }
     }
 

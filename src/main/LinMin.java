@@ -4,12 +4,21 @@ package main;
     Abstract class to define line minimisation class behaviour
  */
 public abstract class LinMin {
+    private static int Counter;
     // Private fields
     private double Tolerance;
     private double Bounds;
     private Coordinate StartPoint;
     private SearchDirection SearchDirection;
     private Coordinate FinalCoordinate;
+
+    public static int getCounter() {
+        return Counter;
+    }
+
+    public static void setCounter(int counter) {
+        Counter = counter;
+    }
 
     // Accessor method for tolerance field
     public double getTolerance() {

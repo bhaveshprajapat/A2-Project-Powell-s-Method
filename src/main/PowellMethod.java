@@ -12,12 +12,14 @@ public class PowellMethod extends Thread implements Serializable {
     private double Tolerance;
     private double Bounds;
     private Coordinate StartPoint;
-    private boolean FatalExceptionOccurred;
+    private boolean EvaluationExceptionOccured;
     private transient LinMin linMin;
     private ArrayList<Coordinate> UnitVectorSearchList = new ArrayList<>();
     private ArrayList<Coordinate> ConjugateDirectionSearchList = new ArrayList<>();
     private Coordinate FinalCoordinate;
     private volatile boolean ThreadStoppedFlag;
+    private int OptimisationCounter;
+    private ExponentialSearch exponentialSearch;
 
     // Class constructor
     public PowellMethod(double Tolerance, double Bounds, Coordinate StartPoint, SearchMethod SearchMethod) {
@@ -35,6 +37,10 @@ public class PowellMethod extends Thread implements Serializable {
                 setLinMin(new GoldenSectionSearch());
                 break;
         }
+    }
+
+    public ExponentialSearch getExponentialSearch() {
+        return exponentialSearch;
     }
 
     // Accessor method for Tolerance
@@ -85,7 +91,7 @@ public class PowellMethod extends Thread implements Serializable {
                 this.linMin.startSearch();
             } catch (EvaluationException CaughtException) {
                 // If anything adverse occurs, exit the thread
-                setFatalExceptionOccurred();
+                setEvaluationExceptionOccured();
                 return;
             }
             // Check for a stop, since linmin was a blocking action
@@ -111,7 +117,7 @@ public class PowellMethod extends Thread implements Serializable {
                 }
             } catch (EvaluationException CaughtException) {
                 // Some fatal error occured
-                setFatalExceptionOccurred();
+                setEvaluationExceptionOccured();
                 return;
             }
             // Exit the method
@@ -122,12 +128,12 @@ public class PowellMethod extends Thread implements Serializable {
         if (ThreadStoppedFlag) {
             return;
         }
-
+        setOptimisationCounter(LinMin.getCounter());
         // initialise exponential search
         Coordinate NewStartPoint = getUnitVectorSearchList().get(getUnitVectorSearchList().size() - 1);
-        PowellMethod.ExponentialSearch exponentialSearch = new ExponentialSearch(NewStartPoint, getTolerance());
+        exponentialSearch = new ExponentialSearch(NewStartPoint, getTolerance());
         exponentialSearch.setVector(getUnitVectorSearchList().get(getUnitVectorSearchList().size() - 3), NewStartPoint);
-        MainSceneController.getLog().add("VECTOR" + exponentialSearch.getXVector() + " " + exponentialSearch.getYVector());
+        MainSceneController.getLog().add("Exponential Search Vector : " + exponentialSearch.getXVector() + "i. " + exponentialSearch.getYVector() + "j");
         if (exponentialSearch.getStartPoint().equals(getStartPoint())) {
             setFinalCoordinate(getStartPoint());
             MainSceneController.getLog().add("No conjugate direction optimisation performed, already at minimum.");
@@ -147,15 +153,17 @@ public class PowellMethod extends Thread implements Serializable {
         try {
             exponentialSearch.startSearch();
         } catch (EvaluationException CaughtException) {
+            // TODO write a better comment than that
             // catch any errors that occur during running
-            setFatalExceptionOccurred();
+            setEvaluationExceptionOccured();
+            return;
         }
         if (ThreadStoppedFlag) {
             return;
         }
+        setOptimisationCounter(LinMin.getCounter() + exponentialSearch.getOptimisationCounter());
         setConjugateDirectionSearchList(exponentialSearch.getOptimisedCoordinateList());
         setFinalCoordinate(exponentialSearch.getFinalCoordinate());
-
     }
 
     public ArrayList<Coordinate> getUnitVectorSearchList() {
@@ -197,13 +205,13 @@ public class PowellMethod extends Thread implements Serializable {
     }
 
     // Accessor method for fatal exception boolean
-    public boolean isFatalExceptionOccurred() {
-        return FatalExceptionOccurred;
+    public boolean isEvaluationExceptionOccured() {
+        return EvaluationExceptionOccured;
     }
 
     // Mutator method for fatal exception
-    public void setFatalExceptionOccurred() {
-        FatalExceptionOccurred = true;
+    public void setEvaluationExceptionOccured() {
+        EvaluationExceptionOccured = true;
     }
 
     public boolean isThreadStopped() {
@@ -235,6 +243,14 @@ public class PowellMethod extends Thread implements Serializable {
         }
     }
 
+    public int getOptimisationCounter() {
+        return OptimisationCounter;
+    }
+
+    public void setOptimisationCounter(int optimisationCounter) {
+        OptimisationCounter = optimisationCounter;
+    }
+
     // Exponential Search Inner Class
     public class ExponentialSearch {
         // Private Fields
@@ -244,10 +260,20 @@ public class PowellMethod extends Thread implements Serializable {
         private Coordinate FinalCoordinate;
         private ArrayList<Coordinate> OptimisedCoordinateList = new ArrayList<>();
         private double Tolerance;
+        private int OptimisationCounter;
+        private boolean divergenceDetected = false;
 
         public ExponentialSearch(Coordinate StartPoint, double Tolerance) {
             this.StartPoint = StartPoint;
             this.Tolerance = Tolerance;
+        }
+
+        public boolean isDivergenceDetected() {
+            return divergenceDetected;
+        }
+
+        public void setDivergenceDetected(boolean divergenceDetected) {
+            this.divergenceDetected = divergenceDetected;
         }
 
         public Coordinate getFinalCoordinate() {
@@ -263,6 +289,7 @@ public class PowellMethod extends Thread implements Serializable {
         }
 
         public void startSearch() throws EvaluationException {
+            this.setOptimisationCounter(0);
             OptimisedCoordinateList.add(StartPoint);
             // Declare local variables
             int MaximumPowerof2 = 2;  // Start at 2 so that 0,1 & 2 can be used initially
@@ -271,6 +298,7 @@ public class PowellMethod extends Thread implements Serializable {
             double FOfCoordinate1, FOfCoordinate2, FOfCoordinate3;
             // while loop to increase the power of 2
             while (true) {
+                this.setOptimisationCounter(this.getOptimisationCounter() + 1);
                 // generate three coordinates with three different powers
                 TempXValue = CoordinateAtPowerNMinus2.getXValue() + scaleVectorByPowerOf2(XVector, MaximumPowerof2 - 2);
                 TempYValue = CoordinateAtPowerNMinus2.getYValue() + scaleVectorByPowerOf2(YVector, MaximumPowerof2 - 2);
@@ -288,6 +316,11 @@ public class PowellMethod extends Thread implements Serializable {
                 if ((FOfCoordinate3 > FOfCoordinate2) && (FOfCoordinate3 > FOfCoordinate1)) {
                     break;
                 } else {
+                    // Condition detects divergence
+                    if (MaximumPowerof2 > Math.pow((Math.ceil(Math.abs(getBounds()))), 8)) {
+                        setDivergenceDetected(true);
+                        return;
+                    }
                     MaximumPowerof2 += 1;
                     OptimisedCoordinateList.add(CoordinateAtPowerN);
                 }
@@ -322,7 +355,6 @@ public class PowellMethod extends Thread implements Serializable {
                     break;
                 }
             }
-
         }
 
         public Coordinate getStartPoint() {
@@ -355,6 +387,14 @@ public class PowellMethod extends Thread implements Serializable {
             double DeltaX = two.getXValue() - one.getXValue();
             setXVector(DeltaX);
             setYVector(DeltaY);
+        }
+
+        public int getOptimisationCounter() {
+            return OptimisationCounter;
+        }
+
+        public void setOptimisationCounter(int optimisationCounter) {
+            OptimisationCounter = optimisationCounter;
         }
     }
 }

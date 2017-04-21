@@ -41,6 +41,8 @@ public class BinarySearch extends LinMin {
             Coordinate Midpoint = new Coordinate(
                     (UpperBoundary.getXValue() + LowerBoundary.getXValue()) / 2,
                     (UpperBoundary.getYValue() + LowerBoundary.getYValue()) / 2);
+            // Increment the static counter
+            LinMin.setCounter(getCounter() + 1);
             // When the current direction is optimised within the bounds, log it and change the direction
             if (Math.abs(Function.evaluate(Midpoint) - Function.evaluate(PreviousCoordinate))
                     < getTolerance()) {

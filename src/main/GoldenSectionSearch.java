@@ -30,6 +30,8 @@ public class GoldenSectionSearch extends LinMin {
             double FOfGoldenSection1 = Function.evaluate(GoldenSection1);
             double FOfGoldenSection2 = Function.evaluate(GoldenSection2);
             Coordinate NewLowerBound, NewUpperBound;
+            // Increment the static counter
+            LinMin.setCounter(getCounter() + 1);
             // If the second golden section is highest, set the upper bound to the second section
             if (FOfGoldenSection1 < FOfGoldenSection2) {
                 NewLowerBound = new Coordinate(LowerBoundary.getXValue(), LowerBoundary.getYValue());
