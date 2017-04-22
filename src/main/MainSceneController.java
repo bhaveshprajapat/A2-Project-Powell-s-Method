@@ -192,7 +192,7 @@ public class MainSceneController {
                 fileOutputStream.close();
             } catch (IOException e) {
                 Alert IOAlert = new Alert(AlertType.ERROR);
-                IOAlert.setTitle("An error occurred during the file write!");
+                IOAlert.setTitle("An error occured during the file write!");
                 IOAlert.setHeaderText("For more information see below...");
                 IOAlert.setContentText(e.getLocalizedMessage());
                 IOAlert.show();
