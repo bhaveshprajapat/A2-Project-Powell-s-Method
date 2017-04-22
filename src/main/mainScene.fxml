@@ -10,7 +10,7 @@
 <VBox xmlns:fx="http://javafx.com/fxml/1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
       minWidth="-Infinity" prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8.0.112"
       fx:controller="main.MainSceneController">
-    <!-- Splitpane holds menu items -->
+    <!-- Split pane to hold menu items -->
     <MenuBar>
         <Menu mnemonicParsing="false" text="File">
             <MenuItem mnemonicParsing="false" onAction="#closeButtonClicked" text="Close"/>
@@ -32,9 +32,6 @@
             <MenuItem mnemonicParsing="false" onAction="#setToBoothFunction" text="Booth Function"/>
             <MenuItem mnemonicParsing="false" onAction="#setToMcCormickFunction" text="McCormick Function"/>
             <MenuItem mnemonicParsing="false" onAction="#setToLeviFunctionN13" text="Lévi Function N.13"/>
-        </Menu>
-        <Menu mnemonicParsing="false" text="Help">
-            <MenuItem mnemonicParsing="false" onAction="#helpButtonClicked" text="Open Help"/>
         </Menu>
     </MenuBar>
     <!-- Split pane has two horizontal components which can be resized as necessary -->

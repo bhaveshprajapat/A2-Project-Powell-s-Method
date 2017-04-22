@@ -1,16 +1,17 @@
 package main;
 
 /*
-    Custom error class is thrown in custom threaded classes
-    which allows going up the call stack and purging memory
-    used if unintentional behavior were to occur.
+    Custom error class used when in the unlikely event that
+    an input fails the validation checks made. It moves an
+    error message up the call stack to the UI thread where the
+    user can be alerted.
  */
 public class EvaluationException extends Exception {
+
     private static final long serialVersionUID = -2461747964902835012L;
 
-    // Returns a new EvaluationException with the ErrorDescription
+    // Returns a new EvaluationException with the error description passed
     public EvaluationException(String ErrorDescription) {
-        // message moved up the call stack to the UI thread for displaying error
         super(ErrorDescription);
     }
 }

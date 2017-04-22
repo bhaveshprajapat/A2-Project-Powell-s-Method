@@ -2,9 +2,7 @@ package main;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Side;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.ScatterChart;
@@ -24,7 +22,9 @@ import java.util.List;
 import java.util.concurrent.FutureTask;
 
 public class MainSceneController {
+    // Private fields
     private static final ArrayList<String> log = new ArrayList<>();
+    // FX GUI elements
     public ProgressIndicator ProgressIndicator;
     public ScatterChart<Number, Number> MainSceneGraph;
     public TextField FunctionTextField;
@@ -41,11 +41,15 @@ public class MainSceneController {
     private PowellMethod LoadedResult;
     private PowellMethod powellMethod;
 
+    /*
+        Returns a reference to the List containing the log entries,
+        allowing direct modifications
+     */
     public static ArrayList<String> getLog() {
         return log;
     }
 
-    // Converts an ArrayList to a Scatter Chart Series
+    // Converts an List of Coordinates to a Scatter Chart Series
     private static Series<Number, Number> createSeriesFromArrayList(List<Coordinate> ArrayListToConvert) {
         Series<Number, Number> objectToReturn = new Series<>();
         for (Coordinate loopCoordinate : ArrayListToConvert) {
@@ -59,7 +63,7 @@ public class MainSceneController {
         return objectToReturn;
     }
 
-    // displays the parameters on the main window's graph
+    // Displays the parameterised series on the main window's graph
     private static void displayGraph(Coordinate finalCoordinate, String function, Series... ScatterChartSeries) {
         NumberAxis xAxis = new NumberAxis();
         xAxis.setForceZeroInRange(false);
@@ -74,7 +78,7 @@ public class MainSceneController {
         Stage stage = new Stage();
         Scene scene = new Scene(scatterChart, 700.0, 700.0);
         stage.setScene(scene);
-        stage.setTitle("Graph View of Function: " + function);
+        stage.setTitle("Graph of Function: " + function);
         stage.show();
         stage.setResizable(true);
         scatterChart.setAnimated(true);
@@ -87,14 +91,17 @@ public class MainSceneController {
         }
     }
 
-    private static void createSeriesAndDrawGraph(List<Coordinate> ArrayListForSeries1,
-                                                 Coordinate finalCoordinate,
-                                                 List<Coordinate> ArrayListForSeries3, String function) {
-        // Series 1: UnitVector Search
+    /*
+        Draws a graph from lists of Coordinates
+     */
+    private static void DrawGraph(List<Coordinate> UnitVectorSearchList,
+                                  Coordinate finalCoordinate,
+                                  List<Coordinate> ExponentialSearchList, String function) {
+        // Series 1: Unit Vector Search
         Series<Number, Number> UnitVectorSearchChartSeries = new Series<>();
         UnitVectorSearchChartSeries.setName("Unit Vector Search Data");
         Data<Number, Number> scatterData;
-        for (Coordinate loopCoordinate : ArrayListForSeries1) {
+        for (Coordinate loopCoordinate : UnitVectorSearchList) {
             if (loopCoordinate != null) {
                 scatterData = new Data<>();
                 scatterData.setXValue(loopCoordinate.getXValue());
@@ -102,7 +109,7 @@ public class MainSceneController {
                 UnitVectorSearchChartSeries.getData().add(scatterData);
             }
         }
-        // Series 2 : final coordinate
+        // Series 2 : Final Coordinate
         Series<Number, Number> finalCoordinateChartSeries = new Series<>();
         double finalX = finalCoordinate.getXValue();
         double finalY = finalCoordinate.getYValue();
@@ -114,72 +121,66 @@ public class MainSceneController {
         if (finalCoordinateChartSeries.getData() != null) {
             finalCoordinateChartSeries.getData().add(finalData);
         }
-        // Series 3: Conjugate Direction search data
-        Series<Number, Number> conjugateDirecrtionSearchChartSeries = new Series<>();
-        for (Coordinate loopCoordinate : ArrayListForSeries3) {
+        // Series 3: Exponential Search data
+        Series<Number, Number> ExponentialSearchChartSeries = new Series<>();
+        for (Coordinate loopCoordinate : ExponentialSearchList) {
             if (loopCoordinate != null) {
-                Data<Number, Number> vectorLineSearchData = new Data<>();
-                vectorLineSearchData.setXValue(loopCoordinate.getXValue());
-                vectorLineSearchData.setYValue(loopCoordinate.getYValue());
-                conjugateDirecrtionSearchChartSeries.getData().add(vectorLineSearchData);
+                Data<Number, Number> ExponentialSearchData = new Data<>();
+                ExponentialSearchData.setXValue(loopCoordinate.getXValue());
+                ExponentialSearchData.setYValue(loopCoordinate.getYValue());
+                ExponentialSearchChartSeries.getData().add(ExponentialSearchData);
             }
         }
-        conjugateDirecrtionSearchChartSeries.setName("Conjugate Direction Search Data");
-        displayGraph(finalCoordinate, function, UnitVectorSearchChartSeries, finalCoordinateChartSeries, conjugateDirecrtionSearchChartSeries);
+        ExponentialSearchChartSeries.setName("Exponential Search Data");
+        displayGraph(finalCoordinate, function, UnitVectorSearchChartSeries, finalCoordinateChartSeries, ExponentialSearchChartSeries);
     }
 
+    /*
+        Switches the search mode to Binary
+        and changes the text box to reflect this.
+     */
     public void setBinarySearchMode(ActionEvent actionEvent) {
-        /*
-            Switches the search mode to Binary
-            and changes the text box to reflect this.
-         */
+
         AlgorithmToUse = SearchMethod.BINARY_SEARCH;
         SearchAlgorithmIndicator.setText("Binary Search");
     }
 
+    /*
+        Switches the search mode to Parabolic Interpolation
+        and changes the text box to reflect this.
+     */
     public void setInverseParabolicInterpolationSearchMode(ActionEvent actionEvent) {
-        /*
-            Switches the search mode to Parabolic Interpolation
-            and changes the text box to reflect this.
-         */
         AlgorithmToUse = SearchMethod.INVERSE_PARABOLIC_INTERPOLATION;
         SearchAlgorithmIndicator.setText("Inverse Parabolic Interpolation");
     }
 
-
+    /*
+        Switches the search mode to Golden Section
+        and changes the text box to reflect this
+     */
     public void setGoldenSectionSearchMode(ActionEvent actionEvent) {
-        /*
-            Switches the search mode to Golden Section
-            and changes the text box to reflect this
-         */
         AlgorithmToUse = SearchMethod.GOLDEN_SECTION_SEARCH;
         SearchAlgorithmIndicator.setText("Golden Section Search");
     }
 
+    /*
+        Saves the set of results from the last run made in this session
+     */
     public void saveThisSetOfResults(ActionEvent actionEvent) {
-        /*
-            Saves the set of results from the last run made in this session
-         */
         if (RunResult != null) { // Check to ensure that a run result exists
-            /*
-                Creates a file save dialog
-            */
+            // Creates a file save dialog
             FileChooser FileChooser = new FileChooser();
             FileChooser.setTitle("Save results to a PMR File");
             // Set the extension filter to .pmr
             ExtensionFilter extensionFilter =
                     new ExtensionFilter("Powell's Method Result Files (*.pmr)", "*.pmr");
             FileChooser.getExtensionFilters().add(extensionFilter);
-            /*
-                Opens a file save dialog and appends the extension if it was deleted
-            */
+            // Opens a file save dialog and appends the extension if it was deleted
             File file = FileChooser.showSaveDialog(null);
             if (!file.getPath().toLowerCase().endsWith(".pmr")) {
                 file = new File(file.getPath() + ".pmr");
             }
-            /*
-                Writes out the RunResult object to the file specified.
-            */
+            //Writes out the RunResult object to the file specified.
             try {
                 FileOutputStream fileOutputStream = new FileOutputStream(file);
                 ObjectOutputStream out = new ObjectOutputStream(fileOutputStream);
@@ -187,7 +188,6 @@ public class MainSceneController {
                 // Flush and close file and file streams
                 out.flush();
                 out.close();
-
                 fileOutputStream.flush();
                 fileOutputStream.close();
             } catch (IOException e) {
@@ -200,6 +200,10 @@ public class MainSceneController {
         }
     }
 
+    /*
+        Loads a serialised, binary PMR file in to memory,
+        and displays the graph from the data within
+     */
     public void loadResultsFromFile(ActionEvent actionEvent) {
         // Un-set the transparency of the graph
         MainSceneGraph.setOpacity(1.0);
@@ -241,9 +245,9 @@ public class MainSceneController {
         // Loads the coordinate list from the loaded result
         List<Coordinate> UnitVectorSearchList = LoadedResult.getUnitVectorSearchList();
         Coordinate FinalCoordinate = LoadedResult.getFinalCoordinate();
-        List<Coordinate> ConjugateDirectionSearchList = LoadedResult.getExponentialSearchList();
+        List<Coordinate> ExponentialSearchList = LoadedResult.getExponentialSearchList();
         // Calls method to open a new graph in a new window with this data
-        createSeriesAndDrawGraph(UnitVectorSearchList, FinalCoordinate, ConjugateDirectionSearchList, "Insert func");
+        DrawGraph(UnitVectorSearchList, FinalCoordinate, ExponentialSearchList, "Insert func");
     }
 
     public void loadResultsFromFileInNewWindow(ActionEvent actionEvent) {
@@ -267,13 +271,13 @@ public class MainSceneController {
 
                     if (LoadedResults != null) {
                         ProgressIndicator.setProgress(1.0);
-                        // Series 1: UnitVectorSearchArrayList
+                        // Series 1: Unit Vector Search
                         List<Coordinate> UnitVectorSearchList = LoadedResults.getUnitVectorSearchList();
-                        // Series 2 : final coordinate
+                        // Series 2 : Final coordinate
                         Coordinate FinalCoordinate = LoadedResults.getFinalCoordinate();
-                        // Series 3: conjugate direction search data
+                        // Series 3: Exponential search data
                         List<Coordinate> ConjugateDirectionSearchCoordinateList = LoadedResults.getUnitVectorSearchList();
-                        createSeriesAndDrawGraph(UnitVectorSearchList, FinalCoordinate, ConjugateDirectionSearchCoordinateList, LoadedResults.getFunctionString());
+                        DrawGraph(UnitVectorSearchList, FinalCoordinate, ConjugateDirectionSearchCoordinateList, LoadedResults.getFunctionString());
                     }
                 }
             }
@@ -286,13 +290,10 @@ public class MainSceneController {
     }
 
     public void onRunButtonClicked(ActionEvent actionEvent) {
+        // Reset linmin complexity metric
         LinMin.setCounter(0);
         if (powellMethod != null) {
-            if (powellMethod.isThreadStopped()) {
-                Alert alert = new Alert(AlertType.INFORMATION);
-                alert.setTitle("Cancelled.");
-                alert.showAndWait();
-            }
+            // Stop the thread if it is alive
             if (powellMethod.isAlive()) {
                 powellMethod.setThreadStopped();
                 try {
@@ -303,15 +304,42 @@ public class MainSceneController {
                 powellMethod = null;
                 return;
             }
+            // Check if the thread stopped
+            if (powellMethod.isThreadStopped()) {
+                Alert alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Cancelled.");
+                alert.show();
+                return;
+            }
         }
+        // Unset graph transparency
         MainSceneGraph.opacityProperty().setValue(100);
+        // Show progress indicator
         if (ProgressIndicator.disabledProperty().getValue()) {
             ProgressIndicator.setDisable(false);
             ProgressIndicator.setVisible(true);
         }
         ProgressIndicator.setDisable(false);
         ProgressIndicator.setProgress(javafx.scene.control.ProgressIndicator.INDETERMINATE_PROGRESS);
-        // Initialise variables
+
+        // Validate and initialise all variables
+        double StartPointX;
+        double StartPointY;
+        double Bounds;
+        double Tolerance = Math.pow(0.1, ToleranceSlider.getValue());
+        StartPointX = Double.parseDouble(StartPointXTextField.getText());
+        StartPointY = Double.parseDouble(StartPointYTextField.getText());
+        Bounds = Double.parseDouble(BoundsTextField.getText());
+        if ((Bounds <= 0.0D) || (Bounds == 1)) {
+            Alert BadInputAlert = new Alert(AlertType.ERROR);
+            BadInputAlert.setTitle("Invalid input in one or more boxes");
+            BadInputAlert.setHeaderText("The following input was not recognised:");
+            BadInputAlert.setContentText("The bounds must be a decimal value greater than 0, and not equal to 1.");
+            BadInputAlert.show();
+            ProgressIndicator.setProgress(0);
+            return;
+        }
+        // Initialise Function
         if ((FunctionTextField.getText() != null) && FunctionTextField.getText().isEmpty()) {
             Alert BadInputAlert = new Alert(AlertType.ERROR);
             BadInputAlert.setTitle("Invalid input in function text field");
@@ -326,23 +354,6 @@ public class MainSceneController {
         String ParsePi = ParseCos.replaceAll("π", "p");
         String ParseTan = ParsePi.replaceAll("tan", "t");
         Function.setInfixExpression(ParseTan);
-        double StartPointX;
-        double StartPointY;
-        double Tolerance = Math.pow(0.1, ToleranceSlider.getValue());
-        double Bounds;
-
-        StartPointX = Double.parseDouble(StartPointXTextField.getText());
-        StartPointY = Double.parseDouble(StartPointYTextField.getText());
-        Bounds = Double.parseDouble(BoundsTextField.getText());
-        if ((Bounds <= 0.0D) || (Bounds == 1)) {
-            Alert BadInputAlert = new Alert(AlertType.ERROR);
-            BadInputAlert.setTitle("Invalid input in one or more boxes");
-            BadInputAlert.setHeaderText("The following input was not recognised:");
-            BadInputAlert.setContentText("The bounds ");
-            BadInputAlert.show();
-            ProgressIndicator.setProgress(0);
-            return;
-        }
 
         /*
         This try block shows errors if the function entered is badly formatted,
@@ -351,27 +362,14 @@ public class MainSceneController {
          */
         try {
             Function.evaluate(new Coordinate(StartPointX, StartPointY));
-        } catch (RuntimeException e) {
-            ProgressIndicator.setProgress(0);
-            Alert badFunction = new Alert(AlertType.ERROR);
-            badFunction.setAlertType(AlertType.ERROR);
-            badFunction.setTitle("Badly formatted function");
-            badFunction.setHeaderText("The function entered could not be interpreted properly");
-            badFunction.setContentText("Please enter a correctly formatted function. See details:"
-                    + System.getProperty("line.separator")
-                    + e.getLocalizedMessage());
-            badFunction.show();
-            return;
         } catch (EvaluationException e) {
-            FutureTask<Void> errorDialog = new FutureTask<>(() -> {
-                Alert alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Evaluation Exception");
-                alert.setHeaderText("Something went wrong during an evaluation");
-                alert.setContentText("It's possible that your expression has an error in it" + e.getMessage());
-                alert.showAndWait();
-                ProgressIndicator.setDisable(true);
-            }, null);
-            Platform.runLater(errorDialog);
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Evaluation Exception");
+            alert.setHeaderText("Something went wrong during an evaluation");
+            alert.setContentText("It's possible that your expression has an error in it" + e.getMessage());
+            alert.show();
+            ProgressIndicator.setDisable(true);
+            return;
         }
         powellMethod = new PowellMethod(Tolerance, Bounds, new Coordinate(StartPointX, StartPointY), AlgorithmToUse);
         powellMethod.start();
@@ -394,11 +392,6 @@ public class MainSceneController {
                     DivergenceAlert.show();
                     log.add("While performing the exponential vector search, the algorithm diverged far from the expected search area. The graph should illustrate this. Increment the bounds to increase the search area if necessary.");
                     updateLog();
-                }
-                if (powellMethod.isThreadStopped()) {
-                    Alert alert = new Alert(AlertType.INFORMATION);
-                    alert.setTitle("Cancelled.");
-                    alert.show();
                 }
                 if (AUTO2DCheckBox.isSelected()) {
                     String functionString = Function.getInfixExpression();
@@ -434,7 +427,7 @@ public class MainSceneController {
 
     }
 
-    // Updates the graph in the main window with the result
+    // Updates the graph in the main window with the result specified
     private void updateGraphInMainWindow(PowellMethod result) {
         Coordinate finalCoordinate = result.getFinalCoordinate();
         Series UnitVectorScatterChartSeries = createSeriesFromArrayList(result.getUnitVectorSearchList());
@@ -443,16 +436,19 @@ public class MainSceneController {
         if (!LayerDataCheckbox.isSelected()) {
             MainSceneGraph.getData().clear();
         }
+        // Adds search data
         UnitVectorScatterChartSeries.setName("Unit Vector Search Data");
         ConjugateDirectionScatterChartSeries.setName("Vector Search Data");
         MainSceneGraph.getData().addAll(UnitVectorScatterChartSeries, ConjugateDirectionScatterChartSeries);
         MainSceneGraph.setTitle("Graph showing path taken to " + finalCoordinate);
+        // Converts final coordinate to a series and adds it
         Data<Number, Number> finalCoordinateData = new Data<>();
         finalCoordinateData.setXValue(finalCoordinate.getXValue());
         finalCoordinateData.setYValue(finalCoordinate.getYValue());
         Series<Number, Number> finalCoordinateSeries = new Series<>();
         finalCoordinateSeries.getData().add(finalCoordinateData);
         finalCoordinateSeries.setName("Final Coordinate");
+
         MainSceneGraph.getData().add(finalCoordinateSeries);
     }
 
@@ -525,20 +521,9 @@ public class MainSceneController {
         System.exit(0);
     }
 
-    public void helpButtonClicked(ActionEvent actionEvent) {
-        try {
-            final Class<? extends MainSceneController> aClass = getClass();
-            Stage stage = new Stage();
-            Parent root = FXMLLoader.load(aClass.getResource("" + "helpScene.fxml"));
-            stage.setTitle("Powell's Method Help");
-            stage.setScene(new Scene(root, 700.0, 300.0));
-            stage.show();
-        } catch (IOException ignored) {
-            log.add("Failed to load help.");
-            updateLog();
-        }
-    }
-
+    /*
+        Show a dialog with the function used when the graph is clicked.
+     */
     public void onGraphClicked(MouseEvent mouseEvent) {
         if (LoadedResult != null) {
             String LineBreak = System.getProperty("line.separator");
@@ -559,6 +544,7 @@ public class MainSceneController {
         }
     }
 
+    // Update the GUI with the latest version of the log
     public void updateLog() {
         String lineSeparator = System.getProperty("line.separator");
         LogTextArea.clear();
@@ -568,6 +554,7 @@ public class MainSceneController {
         }
     }
 
+    // Clears results in the graph and resets the opacity
     public void clearResults(ActionEvent actionEvent) {
         MainSceneGraph.getData().clear();
         MainSceneGraph.setTitle("No results to show");

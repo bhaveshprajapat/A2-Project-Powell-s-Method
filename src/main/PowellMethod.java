@@ -86,7 +86,8 @@ public class PowellMethod extends Thread implements Serializable {
                 linMin.startSearch();
             } catch (EvaluationException CaughtException) {
                 // If anything adverse occurs, exit the thread
-                setEvaluationExceptionOccured();
+                setEvaluationExceptionOccurred();
+                MainSceneController.getLog().add("Evaluation error during unit vector search! Please check your function is correctly formatted.");
                 return;
             }
             // Check for a stop, since linmin was a blocking action
@@ -111,8 +112,9 @@ public class PowellMethod extends Thread implements Serializable {
                     Iterations += 1;
                 }
             } catch (EvaluationException CaughtException) {
-                // Some fatal error occured
-                setEvaluationExceptionOccured();
+                // Catches evaluation errors that might occur
+                setEvaluationExceptionOccurred();
+                MainSceneController.getLog().add("Evaluation error during stop criteria testing! Please check the function.");
                 return;
             }
             // Exit the method
@@ -148,9 +150,9 @@ public class PowellMethod extends Thread implements Serializable {
         try {
             exponentialSearch.startSearch();
         } catch (EvaluationException CaughtException) {
-            // TODO write a better comment than that
-            // catch any errors that occur during running
-            setEvaluationExceptionOccured();
+            // Catches evaluation errors that might occur
+            setEvaluationExceptionOccurred();
+            MainSceneController.getLog().add("Evaluation error during exponential search! Please check your function is correctly formatted.");
             return;
         }
         if (threadStoppedFlag) {
@@ -165,7 +167,7 @@ public class PowellMethod extends Thread implements Serializable {
         return Collections.unmodifiableList(unitVectorSearchList);
     }
 
-    // Accessor method for conjugate direction search list
+    // Accessor method for exponential search list
     public List<Coordinate> getExponentialSearchList() {
         return Collections.unmodifiableList(exponentialSearchList);
     }
@@ -186,7 +188,7 @@ public class PowellMethod extends Thread implements Serializable {
     }
 
     // Mutator method for fatal exception
-    public void setEvaluationExceptionOccured() {
+    public void setEvaluationExceptionOccurred() {
         evaluationExceptionOccurred = true;
     }
 
@@ -200,19 +202,18 @@ public class PowellMethod extends Thread implements Serializable {
 
     public void runTwoDimensionAdjustment() {
         ArrayList<Coordinate> NewUnitVectorList = new ArrayList<>();
-        ArrayList<Coordinate> NewConjugateList = new ArrayList<>();
+        ArrayList<Coordinate> NewExponentialList = new ArrayList<>();
         try {
             for (Coordinate CoordinateStepper : exponentialSearchList) {
                 Coordinate newCoordinate = new Coordinate(CoordinateStepper.getXValue(), Function.evaluate(new Coordinate(CoordinateStepper.getXValue(), 0.0D)));
-                NewUnitVectorList.add(newCoordinate);
+                NewExponentialList.add(newCoordinate);
             }
             for (Coordinate CoordinateStepper : unitVectorSearchList) {
                 Coordinate newCoordinate = new Coordinate(CoordinateStepper.getXValue(), Function.evaluate(new Coordinate(CoordinateStepper.getXValue(), 0.0D)));
-                NewConjugateList.add(newCoordinate);
+                NewUnitVectorList.add(newCoordinate);
             }
-
             finalCoordinate = new Coordinate(finalCoordinate.getXValue(), Function.evaluate(new Coordinate(finalCoordinate.getXValue(), 0.0D)));
-            exponentialSearchList = NewConjugateList;
+            exponentialSearchList = NewExponentialList;
             unitVectorSearchList = NewUnitVectorList;
         } catch (EvaluationException CaughtException) {
             MainSceneController.getLog().add(CaughtException.getMessage());
@@ -235,27 +236,32 @@ public class PowellMethod extends Thread implements Serializable {
         private int OptimisationCounter;
         private boolean divergenceDetected;
 
+        // Class constructor
         public ExponentialSearch(Coordinate StartPoint, double Tolerance) {
             this.StartPoint = StartPoint;
             this.Tolerance = Tolerance;
         }
 
+        // Accessor method for divergence detector
         public boolean isDivergenceDetected() {
             return divergenceDetected;
         }
 
+        // Accessor method for final coordinate
         public Coordinate getFinalCoordinate() {
             return FinalCoordinate;
         }
 
+        // Accessor method for optimisied coordiante list (immutable)
         public List<Coordinate> getOptimisedCoordinateList() {
             return Collections.unmodifiableList(OptimisedCoordinateList);
         }
 
+        // Subroutine to start search
         public void startSearch() throws EvaluationException {
+            // Declare local variables, and initialise counter
             OptimisationCounter = 0;
             OptimisedCoordinateList.add(StartPoint);
-            // Declare local variables
             int MaximumPowerOf2 = 2;  // Start at 2 so that 0,1 & 2 can be used initially
             Coordinate CoordinateAtPowerNMinus2 = StartPoint;
             Coordinate CoordinateAtPowerNMinus1;
@@ -265,10 +271,13 @@ public class PowellMethod extends Thread implements Serializable {
             double FOfCoordinate1;
             double FOfCoordinate2;
             double FOfCoordinate3;
+            /*
+                Exponential Search Stage
+             */
             // while loop to increase the power of 2
             while (true) {
                 OptimisationCounter = OptimisationCounter + 1;
-                // generate three coordinates with three different powers
+                // Generate three coordinates with the vector applied by three different powers of 2
                 TempXValue = CoordinateAtPowerNMinus2.getXValue() + scaleVectorByPowerOf2(XVector, MaximumPowerOf2 - 2);
                 TempYValue = CoordinateAtPowerNMinus2.getYValue() + scaleVectorByPowerOf2(YVector, MaximumPowerOf2 - 2);
                 CoordinateAtPowerNMinus2 = new Coordinate(TempXValue, TempYValue);
@@ -278,76 +287,97 @@ public class PowellMethod extends Thread implements Serializable {
                 TempXValue = CoordinateAtPowerNMinus2.getXValue() + scaleVectorByPowerOf2(XVector, MaximumPowerOf2);
                 TempYValue = CoordinateAtPowerNMinus2.getYValue() + scaleVectorByPowerOf2(YVector, MaximumPowerOf2);
                 CoordinateAtPowerN = new Coordinate(TempXValue, TempYValue);
-
+                // Evaluate all three coordinates
                 FOfCoordinate1 = Function.evaluate(CoordinateAtPowerNMinus2);
                 FOfCoordinate2 = Function.evaluate(CoordinateAtPowerNMinus1);
                 FOfCoordinate3 = Function.evaluate(CoordinateAtPowerN);
-                if ((FOfCoordinate3 > FOfCoordinate2) && (FOfCoordinate3 > FOfCoordinate1)) {
+                if ((FOfCoordinate3 > FOfCoordinate2) && (FOfCoordinate3 > FOfCoordinate1) || (FOfCoordinate1 > FOfCoordinate2) && (FOfCoordinate1 > FOfCoordinate3)) {
+                    OptimisedCoordinateList.add(CoordinateAtPowerNMinus1);
+                    OptimisedCoordinateList.add(CoordinateAtPowerN);
                     break;
                 } else {
-                    // Condition detects divergence
-                    if (MaximumPowerOf2 > Math.pow(Math.ceil(Math.abs(getBounds())), 8.0)) {
+                    // Condition detects divergence where the exponential search searches too far away from original search area.
+                    if (MaximumPowerOf2 > Math.pow(Math.ceil(Math.abs(getBounds() + 1)), 4.0)) {
                         divergenceDetected = true;
                         return;
                     }
                     MaximumPowerOf2 += 1;
-                    OptimisedCoordinateList.add(CoordinateAtPowerN);
+                    OptimisedCoordinateList.add(CoordinateAtPowerNMinus2);
                 }
             }
-            // minimum is now bracketed by coordinate 1 and coordinate 3
-            // begin 2D binary search
+            // The minimum is now bracketed by coordinates 1 & 3
+
+            /*
+                2D Binary Search
+             */
+            // Calculate midpoint
             double MidpointX = (CoordinateAtPowerNMinus2.getXValue() + CoordinateAtPowerN.getXValue()) / 2.0;
             double MidpointY = (CoordinateAtPowerNMinus2.getYValue() + CoordinateAtPowerN.getYValue()) / 2.0;
-            Coordinate Midpoint = new Coordinate(MidpointX, MidpointY);
-            Coordinate UpperBound = CoordinateAtPowerN;
-            Coordinate LowerBound = CoordinateAtPowerNMinus2;
-            double FOfUpperBound = Function.evaluate(UpperBound);
-            double FOfLowerBound = Function.evaluate(LowerBound);
-            OptimisedCoordinateList.add(Midpoint);
+            Coordinate LoopMidpoint = new Coordinate(MidpointX, MidpointY);
+            // Calculate bounds
+            Coordinate UpperBound = new Coordinate(CoordinateAtPowerN.getXValue(), CoordinateAtPowerN.getYValue());
+            Coordinate LowerBound = new Coordinate(CoordinateAtPowerNMinus2.getXValue(), CoordinateAtPowerNMinus2.getYValue());
+
             while (true) {
+                // Evaluate bounds, restrict bounds based on the highest
+                double FOfUpperBound = Function.evaluate(UpperBound);
+                double FOfLowerBound = Function.evaluate(LowerBound);
                 if (FOfLowerBound > FOfUpperBound) {
-                    LowerBound = Midpoint;
+                    LowerBound = new Coordinate(LoopMidpoint.getXValue(), LoopMidpoint.getYValue());
                 }
                 if (FOfUpperBound > FOfLowerBound) {
-                    UpperBound = Midpoint;
+                    UpperBound = new Coordinate(LoopMidpoint.getXValue(), LoopMidpoint.getYValue());
                 }
+                // Calculate a new midpoint
                 MidpointX = (UpperBound.getXValue() + LowerBound.getXValue()) / 2.0;
                 MidpointY = (UpperBound.getYValue() + LowerBound.getYValue()) / 2.0;
                 Coordinate NewMidpoint = new Coordinate(MidpointX, MidpointY);
+                // Compare it with the stop condition
+                double FOfCurrentCoordinate = Function.evaluate(NewMidpoint);
+                double FOfLastCoordinate = Function.evaluate(OptimisedCoordinateList.get(OptimisedCoordinateList.size() - 1));
                 OptimisedCoordinateList.add(NewMidpoint);
-                double FOfCurrentCoordinate = Function.evaluate(OptimisedCoordinateList.get(OptimisedCoordinateList.size() - 1));
-                double FOfLastCoordinate = Function.evaluate(OptimisedCoordinateList.get(OptimisedCoordinateList.size() - 2));
                 if (Math.abs(FOfCurrentCoordinate - FOfLastCoordinate) < Tolerance) {
-                    FinalCoordinate = OptimisedCoordinateList.get(OptimisedCoordinateList.size() - 1);
+                    FinalCoordinate = NewMidpoint;
                     break;
+                } else {
+                    // Re-iterate
+                    LoopMidpoint = new Coordinate(NewMidpoint.getXValue(), NewMidpoint.getYValue());
                 }
             }
         }
 
+        // Accessor method for start point
         public Coordinate getStartPoint() {
             return StartPoint;
         }
 
+        // Accessor method for X Vector
         public double getXVector() {
             return XVector;
         }
 
+        // Accessor method for Y Vector
         public double getYVector() {
             return YVector;
         }
 
+        /*
+            Returns 2^Power * Vector (used during exponential search)
+         */
         private double scaleVectorByPowerOf2(double vector, int power) {
             return vector * Math.pow(2.0, power);
         }
 
-        // sets the vectors on the object
+        // Sets the vectors to search over
         public void setVector(Coordinate firstCoordinate, Coordinate secondCoordinate) {
-            double DeltaY = secondCoordinate.getYValue() - firstCoordinate.getYValue();
-            YVector = DeltaY;
+            YVector = secondCoordinate.getYValue() - firstCoordinate.getYValue();
             XVector = secondCoordinate.getXValue() - firstCoordinate.getXValue();
 
         }
 
+        /*
+            Gets optimisation counter value
+         */
         public int getOptimisationCounter() {
             return OptimisationCounter;
         }

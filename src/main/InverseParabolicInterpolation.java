@@ -1,12 +1,13 @@
 package main;
 
 /*
-    Class to perform an inverse parabolic interpolation in one dimension
+    Line Minimisation class performs an Inverse Parabolic Interpolation in one dimension
  */
 public class InverseParabolicInterpolation extends LinMin {
 
     @Override
     void startSearch() throws EvaluationException {
+        // Initialise placeholder variables
         Coordinate PreviousGuess = getStartPoint();
         Coordinate NextGuess;
         // Create direction vectors and set their values
@@ -23,10 +24,15 @@ public class InverseParabolicInterpolation extends LinMin {
         Coordinate UpperBoundary = new Coordinate(UpperBoundaryXValue, UpperBoundaryYValue);
 
         while (true) {
-
+            // Increment optimisation counter
+            LinMin.setCounter(LinMin.getCounter() + 1);
+            /*
+                a, b & c are named as such to ease readability
+             */
             double a; // Lower bound
             double b; // Current guess
             double c; // Upper bound
+            // Initialise a, b and c
             if (OptimisingByX) {
                 a = LowerBoundary.getXValue();
                 b = PreviousGuess.getXValue();
@@ -36,36 +42,33 @@ public class InverseParabolicInterpolation extends LinMin {
                 b = PreviousGuess.getYValue();
                 c = UpperBoundary.getYValue();
             }
-            LinMin.setCounter(LinMin.getCounter() + 1);
-
-
-            double numerator = (Math.pow(b - a, 2.0) * (Function.evaluate(PreviousGuess) - Function.evaluate(UpperBoundary))) - (StrictMath.pow(b - c, 2.0) * (Function.evaluate(PreviousGuess) - Function.evaluate(LowerBoundary)));
+            // Calculate a new best guess through the inverse parabola
+            double numerator = (Math.pow(b - a, 2.0) * (Function.evaluate(PreviousGuess) - Function.evaluate(UpperBoundary))) - (Math.pow(b - c, 2.0) * (Function.evaluate(PreviousGuess) - Function.evaluate(LowerBoundary)));
             double denominator = ((b - a) * (Function.evaluate(PreviousGuess) - Function.evaluate(UpperBoundary))) - ((b - c) * (Function.evaluate(PreviousGuess) - Function.evaluate(LowerBoundary)));
-
-            double interpolate = b - (0.5 * (numerator / denominator));
-
+            double interpolatedValue = b - (0.5 * (numerator / denominator));
+            // Create a new coordinate with the interpolated value, and adjust either a or c to the previous guess
             if (OptimisingByX) {
-                NextGuess = new Coordinate(interpolate, PreviousGuess.getYValue());
-
-                if (interpolate < PreviousGuess.getXValue()) {
+                NextGuess = new Coordinate(interpolatedValue, PreviousGuess.getYValue());
+                if (interpolatedValue < PreviousGuess.getXValue()) {
                     UpperBoundary = new Coordinate(PreviousGuess.getXValue(), PreviousGuess.getYValue());
-                } else if (interpolate > PreviousGuess.getXValue()) {
+                } else if (interpolatedValue > PreviousGuess.getXValue()) {
                     LowerBoundary = new Coordinate(PreviousGuess.getXValue(), PreviousGuess.getYValue());
                 }
-
             } else {
-                NextGuess = new Coordinate(PreviousGuess.getXValue(), interpolate);
-                if (interpolate < PreviousGuess.getYValue()) {
+                NextGuess = new Coordinate(PreviousGuess.getXValue(), interpolatedValue);
+                if (interpolatedValue < PreviousGuess.getYValue()) {
                     UpperBoundary = new Coordinate(PreviousGuess.getXValue(), PreviousGuess.getYValue());
-                } else if (interpolate > PreviousGuess.getYValue()) {
+                } else if (interpolatedValue > PreviousGuess.getYValue()) {
                     LowerBoundary = new Coordinate(PreviousGuess.getXValue(), PreviousGuess.getYValue());
                 }
             }
-            //Stop condition
+
+            // Stop condition determines whether we've fully optimised
             if (Math.abs(Function.evaluate(PreviousGuess) - Function.evaluate(NextGuess)) < getTolerance()) {
                 setFinalCoordinate(NextGuess);
                 return;
             } else {
+                // Re-iterate
                 PreviousGuess = new Coordinate(NextGuess.getXValue(), NextGuess.getYValue());
             }
         }

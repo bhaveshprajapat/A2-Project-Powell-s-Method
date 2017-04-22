@@ -1,7 +1,7 @@
 package main;
 
 /*
-    Class to perform a Binary Search in one dimension
+    Line Minimisation class performs a Binary Search in one dimension
  */
 public class BinarySearch extends LinMin {
     @Override
@@ -9,6 +9,8 @@ public class BinarySearch extends LinMin {
         Coordinate PreviousCoordinate = getStartPoint();
         int BoundaryRestriction = 1;
         while (true) {
+            // Increment the static counter
+            LinMin.setCounter(getCounter() + 1);
             // Create direction vectors and set their values
             boolean OptimisingByX = getSearchDirection() == SearchDirection.VECTOR_I;
             int VectorX = OptimisingByX ? 1 : 0;
@@ -41,8 +43,6 @@ public class BinarySearch extends LinMin {
             Coordinate Midpoint = new Coordinate(
                     (UpperBoundary.getXValue() + LowerBoundary.getXValue()) / 2.0,
                     (UpperBoundary.getYValue() + LowerBoundary.getYValue()) / 2.0);
-            // Increment the static counter
-            LinMin.setCounter(getCounter() + 1);
             // When the current direction is optimised within the bounds, log it and change the direction
             if (Math.abs(Function.evaluate(Midpoint) - Function.evaluate(PreviousCoordinate))
                     < getTolerance()) {

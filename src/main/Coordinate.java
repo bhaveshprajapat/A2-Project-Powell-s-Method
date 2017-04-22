@@ -1,7 +1,7 @@
 package main;
 
 /*
-    Custom Coordinate class which stores a corresponding X and Y Value.
+    Coordinate class which stores a corresponding X and Y Value.
  */
 import java.io.Serializable;
 
@@ -10,7 +10,7 @@ public class Coordinate implements Serializable {
     private double xValue;
     private double yValue;
 
-    // Class Constructor
+    // Coordinate Constructor
     public Coordinate(double xValue, double yValue) {
         this.xValue = xValue;
         this.yValue = yValue;

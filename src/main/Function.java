@@ -1,52 +1,53 @@
 package main;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EmptyStackException;
 import java.util.Stack;
 
-public class Function implements Serializable {
-    // Declare fields
-    private static final long serialVersionUID = -4936036854404504779L; // Necessary for serialisable objects in Java
+public class Function {
+    // Declare static fields
     private static String InfixExpression;
     private static String PostfixExpression;
 
-    // Method converts a given string to RPN
-    private static void convertInfixToRPN() {
+    // Method converts a given string to Postfix
+    private static String convertInfixToPostfix(String expression) {
         Stack<String> OperatorStack = new Stack<>();
         StringBuilder OutputBuilder = new StringBuilder();
-        InfixExpression = removeAllSpaces(InfixExpression);
-        String[] UncheckedTokens = tokeniseString(InfixExpression);
-        // Check tokens
+        expression = removeAllSpaces(expression);
+        String[] UncheckedTokens = tokeniseString(expression);
+        // Check tokens for common errors and correct them automatically
         String[] CheckedTokens = checkTokens(UncheckedTokens);
-        for (String currentToken : CheckedTokens) {
+        for (String currentToken : CheckedTokens) { // Loop through each token
+
             if (checkIfOperand(currentToken)) {
-                OutputBuilder.append(currentToken).append(',');
+                OutputBuilder.append(currentToken).append(','); // Add operand to the output
             } else if (isLeftParenthesis(currentToken)) {
-                OperatorStack.push(currentToken);
+                OperatorStack.push(currentToken); // Push (
             } else if (isRightParenthesis(currentToken)) {
                 while (!isLeftParenthesis(OperatorStack.peek())) {
-                    OutputBuilder.append(OperatorStack.pop()).append(',');
+                    OutputBuilder.append(OperatorStack.pop()).append(','); // When a ) is occurred, pop all operators
                 }
-                OperatorStack.pop();
+                OperatorStack.pop(); // Pop the ), without appending to output
             } else if (isOperator(currentToken)) {
                 while (!OperatorStack.isEmpty()) {
                     if (isHigherPrecedence(currentToken, OperatorStack.peek())) {
-                        OutputBuilder.append(OperatorStack.pop()).append(',');
+                        OutputBuilder.append(OperatorStack.pop()).append(','); // Pop and output anything with a higher precedence first
                     } else {
                         break;
                     }
                 }
-                OperatorStack.push(currentToken);
+                OperatorStack.push(currentToken); // Pop the operator to the output
             } else {
+                // (Very unlikely) an unknown token passed validation, it will be ignored - the user will alerted
                 MainSceneController.getLog().add("Unrecognised token found in function: " + currentToken + "... ignored.");
             }
         }
         while (!OperatorStack.isEmpty()) {
-            OutputBuilder.append(OperatorStack.pop()).append(',');
+            OutputBuilder.append(OperatorStack.pop()).append(','); // Pop anything left over
         }
+        // Create result and return
         String finalResult = OutputBuilder.toString();
-        PostfixExpression = finalResult.substring(0, finalResult.length() - 1);
+        return finalResult.substring(0, finalResult.length() - 1);
     }
 
     // Is the parameterised token a RIGHT PARENTHESIS?
@@ -103,6 +104,7 @@ public class Function implements Serializable {
         return stringToTokenise.split("(?<=[-+^*/()])|(?=[-+*/()^])|(?=[a-z])|(?<=.[a-z])|(?<=[a-z])");
     }
 
+    // Public function returns the expression evaluated with a particular coordinate
     public static double evaluate(Coordinate coordinateToUse) throws EvaluationException {
         /*
             Work through each token in the array, pushing
@@ -130,7 +132,7 @@ public class Function implements Serializable {
                 try {
                     LeftOperandDouble = Double.parseDouble(LeftOperand);
                 } catch (NumberFormatException numberFormatException) {
-                    // If the operand isn't a number, it must be a letter representation
+                    // If the operand isn't a number, it must be a letter representation - so substitute it
                     switch (LeftOperand) {
                         case "x":
                             LeftOperandDouble = coordinateToUse.getXValue();
@@ -145,7 +147,7 @@ public class Function implements Serializable {
                             LeftOperandDouble = Math.PI;
                             break;
                         default:
-                            // a letter has been used that has no known value
+                            // A letter has been used that has no known value
                             throw new EvaluationException("Unrecognised operand: " + LeftOperand);
                     }
                 }
@@ -153,7 +155,7 @@ public class Function implements Serializable {
                     // Attempt numeric conversion
                     RightOperandDouble = Double.parseDouble(RightOperand);
                 } catch (NumberFormatException e) {
-                    // If the operand isn't a number, it must be a letter representation
+                    // If the operand isn't a number, it must be a letter representation - so substitute it
                     switch (RightOperand) {
                         case "x":
                             RightOperandDouble = coordinateToUse.getXValue();
@@ -172,7 +174,7 @@ public class Function implements Serializable {
                             throw new EvaluationException("Unrecognised operand: " + LeftOperand);
                     }
                 }
-                // Perform operation on two popped stack items
+                // Perform operator on the two popped stack items
                 switch (TokenStepper) {
                     case "+":
                         OperandStack.push(String.valueOf(LeftOperandDouble + RightOperandDouble));
@@ -200,7 +202,7 @@ public class Function implements Serializable {
                         break;
                 }
             } else {
-                // Current item is a operand, so push it to the stack
+                // Current item is a operand, so push it to the stack of operands yet to be operated on
                 OperandStack.push(TokenStepper);
             }
         }
@@ -216,7 +218,7 @@ public class Function implements Serializable {
     // Mutator method for the infix expression
     public static void setInfixExpression(String InfixExpression) {
         Function.InfixExpression = InfixExpression;
-        convertInfixToRPN();
+        PostfixExpression = convertInfixToPostfix(InfixExpression);
     }
 
     // This private method checks a String array and moves minus signs if they are unary
@@ -244,7 +246,7 @@ public class Function implements Serializable {
                 if ("-".equals(UncheckedTokenArray[0])) {
                     UncheckedTokenArray[1] = '-' + UncheckedTokenArray[1];
                     // Current token is obsolete
-                    CheckedTokensList.add(UncheckedTokenArray[Stepper]);
+                    CheckedTokensList.add(UncheckedTokenArray[0]);
                     continue;
                 }
             }

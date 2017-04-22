@@ -4,8 +4,8 @@ package main;
     Abstract class to define line minimisation class behaviour
  */
 public abstract class LinMin {
-    private static int Counter;
     // Private fields
+    private static int Counter;
     private double tolerance;
     private double bounds;
     private Coordinate startPoint;
@@ -21,52 +21,52 @@ public abstract class LinMin {
     }
 
     // Accessor method for tolerance field
-    public double getTolerance() {
+    public final double getTolerance() {
         return tolerance;
     }
 
     //Mutator method for tolerance field
-    public void setTolerance(double tolerance) {
+    public final void setTolerance(double tolerance) {
         this.tolerance = tolerance;
     }
 
     // Accessor method for bounds field
-    public double getBounds() {
+    public final double getBounds() {
         return bounds;
     }
 
     // Mutator method for bounds field
-    public void setBounds(double bounds) {
+    public final void setBounds(double bounds) {
         this.bounds = bounds;
     }
 
     // Accessor method for start point coordinate field
-    public Coordinate getStartPoint() {
+    public final Coordinate getStartPoint() {
         return startPoint;
     }
 
     // Mutator method for start point coordinate field
-    public void setStartPoint(Coordinate startPoint) {
+    public final void setStartPoint(Coordinate startPoint) {
         this.startPoint = startPoint;
     }
 
     // Accessor method for search direction field
-    public SearchDirection getSearchDirection() {
+    public final SearchDirection getSearchDirection() {
         return searchDirection;
     }
 
     // Mutator method for search direction field
-    public void setSearchDirection(SearchDirection searchDirection) {
+    public final void setSearchDirection(SearchDirection searchDirection) {
         this.searchDirection = searchDirection;
     }
 
     // Accessor method for final coordinate field
-    public Coordinate getFinalCoordinate() {
+    public final Coordinate getFinalCoordinate() {
         return finalCoordinate;
     }
 
     // Mutator method for final coordinate field
-    public void setFinalCoordinate(Coordinate finalCoordinate) {
+    public final void setFinalCoordinate(Coordinate finalCoordinate) {
         this.finalCoordinate = finalCoordinate;
     }
 
