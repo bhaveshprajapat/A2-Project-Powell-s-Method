@@ -7,39 +7,39 @@ import java.io.Serializable;
 
 public class Coordinate implements Serializable {
     private static final long serialVersionUID = -5933363260711222652L;
-    private double XValue;
-    private double YValue;
+    private double xValue;
+    private double yValue;
 
     // Class Constructor
-    public Coordinate(double XValue, double YValue) {
-        this.XValue = XValue;
-        this.YValue = YValue;
+    public Coordinate(double xValue, double yValue) {
+        this.xValue = xValue;
+        this.yValue = yValue;
     }
 
     // Returns a String to describe this Coordinate Object
     @Override
     public String toString() {
-        return "Coordinate " + "-> X: " + getXValue() + " & Y: " + getYValue();
+        return "Coordinate " + "-> X: " + xValue + " & Y: " + yValue;
     }
 
     // Accessor method for X Value
     public double getXValue() {
-        return XValue;
+        return xValue;
     }
 
     // Mutator method for X Value
-    public void setXValue(double XValue) {
-        this.XValue = XValue;
+    public void setXValue(double xValue) {
+        this.xValue = xValue;
     }
 
     // Accessor method for Y value
     public double getYValue() {
-        return YValue;
+        return yValue;
     }
 
     // Mutator method for Y Value
-    public void setYValue(double YValue) {
-        this.YValue = YValue;
+    public void setYValue(double yValue) {
+        this.yValue = yValue;
     }
 
     /*
@@ -48,6 +48,11 @@ public class Coordinate implements Serializable {
     @Override
     public boolean equals(Object obj) {
         Coordinate Comparison = (Coordinate) obj;
-        return (Comparison.getXValue() == getXValue()) && (Comparison.getYValue() == getYValue());
+        if (Comparison.xValue == xValue) {
+            if (Comparison.yValue == yValue) {
+                return true;
+            }
+        }
+        return false;
     }
 }

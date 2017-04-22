@@ -2,6 +2,8 @@ package main;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /*
     Powell Method Thread Class that can be written to a binary file
@@ -9,35 +11,35 @@ import java.util.ArrayList;
 public class PowellMethod extends Thread implements Serializable {
     // Private fields
     private static final long serialVersionUID = -4101739456805897681L;
-    private double Tolerance;
-    private double Bounds;
-    private Coordinate StartPoint;
-    private boolean EvaluationExceptionOccured;
+    private double tolerance;
+    private double bounds;
+    private Coordinate startPoint;
+    private boolean evaluationExceptionOccurred;
     private transient LinMin linMin;
-    private ArrayList<Coordinate> UnitVectorSearchList = new ArrayList<>();
-    private ArrayList<Coordinate> ConjugateDirectionSearchList = new ArrayList<>();
-    private Coordinate FinalCoordinate;
-    private volatile boolean ThreadStoppedFlag;
-    private int OptimisationCounter;
-    private ExponentialSearch exponentialSearch;
+    private ArrayList<Coordinate> unitVectorSearchList = new ArrayList<>();
+    private List<Coordinate> exponentialSearchList = new ArrayList<>();
+    private Coordinate finalCoordinate;
+    private volatile boolean threadStoppedFlag;
+    private int optimisationCounter;
+    private transient ExponentialSearch exponentialSearch;
 
     // Class constructor
     public PowellMethod(double Tolerance, double Bounds, Coordinate StartPoint, SearchMethod SearchMethod) {
-        this.Tolerance = Tolerance;
-        this.Bounds = Bounds;
-        this.StartPoint = StartPoint;
+        tolerance = Tolerance;
+        bounds = Bounds;
+        startPoint = StartPoint;
         // Initialise linMin with the correct search method
         switch (SearchMethod) {
             case BINARY_SEARCH:
                 // Load a binary search object
-                setLinMin(new BinarySearch());
+                linMin = new BinarySearch();
                 break;
             case GOLDEN_SECTION_SEARCH:
                 // Load a golden section search object
-                setLinMin(new GoldenSectionSearch());
+                linMin = new GoldenSectionSearch();
                 break;
             case INVERSE_PARABOLIC_INTERPOLATION:
-                setLinMin(new InverseParabolicInterpolation());
+                linMin = new InverseParabolicInterpolation();
                 break;
         }
     }
@@ -46,19 +48,9 @@ public class PowellMethod extends Thread implements Serializable {
         return exponentialSearch;
     }
 
-    // Accessor method for Tolerance
-    public double getTolerance() {
-        return Tolerance;
-    }
-
     // Accessor method for bounds
     public double getBounds() {
-        return Bounds;
-    }
-
-    // gettter for startSearch point
-    public Coordinate getStartPoint() {
-        return StartPoint;
+        return bounds;
     }
 
     // startSearch method for powell method search that overrides startSearch in Thread
@@ -68,49 +60,49 @@ public class PowellMethod extends Thread implements Serializable {
         super.start();
         // Declare and initialise variables where necessary
         int Iterations = 0;
-        boolean OptimisingByX, InitialRun;
-        InitialRun = true;
-        OptimisingByX = false;
+        boolean OptimisingByX = false;
+        boolean InitialRun = true;
+
         int ListSize;
         // Add startSearch point to list
-        getUnitVectorSearchList().add(getStartPoint());
+        unitVectorSearchList.add(startPoint);
         // Loop over linmin
         while (true) {
-            if (ThreadStoppedFlag) {
+            if (threadStoppedFlag) {
                 return;
             }
             // Set up the linmin object with the values passed in to this class
-            ListSize = getUnitVectorSearchList().size();
+            ListSize = unitVectorSearchList.size();
             if (InitialRun) {
-                this.linMin.setStartPoint(getStartPoint());
+                linMin.setStartPoint(startPoint);
             } else {
-                this.linMin.setStartPoint(getUnitVectorSearchList().get(ListSize - 1));
+                linMin.setStartPoint(unitVectorSearchList.get(ListSize - 1));
             }
-            this.linMin.setTolerance(getTolerance());
-            this.linMin.setBounds(getBounds());
-            this.linMin.setSearchDirection(OptimisingByX ? SearchDirection.VECTOR_I : SearchDirection.VECTOR_J);
+            linMin.setTolerance(tolerance);
+            linMin.setBounds(bounds);
+            linMin.setSearchDirection(OptimisingByX ? SearchDirection.VECTOR_I : SearchDirection.VECTOR_J);
             // Execute linmin
             try {
-                this.linMin.startSearch();
+                linMin.startSearch();
             } catch (EvaluationException CaughtException) {
                 // If anything adverse occurs, exit the thread
                 setEvaluationExceptionOccured();
                 return;
             }
             // Check for a stop, since linmin was a blocking action
-            if (ThreadStoppedFlag) {
+            if (threadStoppedFlag) {
                 return;
             }
             // Adds linmin result to list
-            getUnitVectorSearchList().add(this.linMin.getFinalCoordinate());
-            ListSize = getUnitVectorSearchList().size();
+            unitVectorSearchList.add(linMin.getFinalCoordinate());
+            ListSize = unitVectorSearchList.size();
             //reset last and current points
-            Coordinate Last = getUnitVectorSearchList().get(ListSize - 2);
-            Coordinate Current = this.linMin.getFinalCoordinate();
-            // Calculates Tolerance in case we're already at minimum
+            Coordinate Last = unitVectorSearchList.get(ListSize - 2);
+            Coordinate Current = linMin.getFinalCoordinate();
+            // Calculates tolerance in case we're already at minimum
             try {
                 if ((Math.abs(Function.evaluate(Last) - Function.evaluate(Current))
-                        < getTolerance()) && (Iterations > 3)) {
+                        < tolerance) && (Iterations > 3)) {
                     break;
                 } else {
                     // Run another optimisation
@@ -128,28 +120,28 @@ public class PowellMethod extends Thread implements Serializable {
                 break;
             }
         }
-        if (ThreadStoppedFlag) {
+        if (threadStoppedFlag) {
             return;
         }
-        setOptimisationCounter(LinMin.getCounter());
+        optimisationCounter = LinMin.getCounter();
         // initialise exponential search
-        Coordinate NewStartPoint = getUnitVectorSearchList().get(getUnitVectorSearchList().size() - 1);
-        exponentialSearch = new ExponentialSearch(NewStartPoint, getTolerance());
-        exponentialSearch.setVector(getUnitVectorSearchList().get(getUnitVectorSearchList().size() - 3), NewStartPoint);
-        MainSceneController.getLog().add("Exponential Search Vector : " + exponentialSearch.getXVector() + "i. " + exponentialSearch.getYVector() + "j");
-        if (exponentialSearch.getStartPoint().equals(getStartPoint())) {
-            setFinalCoordinate(getStartPoint());
+        Coordinate NewStartPoint = unitVectorSearchList.get(unitVectorSearchList.size() - 1);
+        exponentialSearch = new ExponentialSearch(NewStartPoint, tolerance);
+        exponentialSearch.setVector(unitVectorSearchList.get(unitVectorSearchList.size() - 3), NewStartPoint);
+        MainSceneController.getLog().add("Exponential Search Vector : " + exponentialSearch.getXVector() + "i. " + exponentialSearch.getYVector() + 'j');
+        if (exponentialSearch.getStartPoint().equals(startPoint)) {
+            finalCoordinate = startPoint;
             MainSceneController.getLog().add("No conjugate direction optimisation performed, already at minimum.");
             MainSceneController.getLog().add("The method may have been caught inside a local minimum, try higher bounds in this event.");
             return;
         }
-        if ((exponentialSearch.getXVector() == 0D) && (exponentialSearch.getYVector() == 0D)) {
-            setFinalCoordinate(getStartPoint());
+        if ((exponentialSearch.getXVector() == 0.0D) && (exponentialSearch.getYVector() == 0.0D)) {
+            finalCoordinate = startPoint;
             MainSceneController.getLog().add("No conjugate direction optimisation performed, already at minimum.");
             MainSceneController.getLog().add("The method may have been caught inside a local minimum, try higher bounds in this event.");
             return;
         }
-        if (ThreadStoppedFlag) {
+        if (threadStoppedFlag) {
             setThreadStopped();
             return;
         }
@@ -161,45 +153,26 @@ public class PowellMethod extends Thread implements Serializable {
             setEvaluationExceptionOccured();
             return;
         }
-        if (ThreadStoppedFlag) {
+        if (threadStoppedFlag) {
             return;
         }
-        setOptimisationCounter(LinMin.getCounter() + exponentialSearch.getOptimisationCounter());
-        setConjugateDirectionSearchList(exponentialSearch.getOptimisedCoordinateList());
-        setFinalCoordinate(exponentialSearch.getFinalCoordinate());
+        optimisationCounter = LinMin.getCounter() + exponentialSearch.getOptimisationCounter();
+        exponentialSearchList = exponentialSearch.getOptimisedCoordinateList();
+        finalCoordinate = exponentialSearch.getFinalCoordinate();
     }
 
-    public ArrayList<Coordinate> getUnitVectorSearchList() {
-        return UnitVectorSearchList;
-    }
-
-    public void setUnitVectorSearchList(ArrayList<Coordinate> unitVectorSearchList) {
-        UnitVectorSearchList = unitVectorSearchList;
+    public List<Coordinate> getUnitVectorSearchList() {
+        return Collections.unmodifiableList(unitVectorSearchList);
     }
 
     // Accessor method for conjugate direction search list
-    public ArrayList<Coordinate> getConjugateDirectionSearchList() {
-        return ConjugateDirectionSearchList;
-    }
-
-    // Mutator method for conjugate direction search list
-    public void setConjugateDirectionSearchList(ArrayList<Coordinate> conjugateDirectionSearchList) {
-        ConjugateDirectionSearchList = conjugateDirectionSearchList;
-    }
-
-    // Mutator method for linmin
-    public void setLinMin(LinMin linMin) {
-        this.linMin = linMin;
+    public List<Coordinate> getExponentialSearchList() {
+        return Collections.unmodifiableList(exponentialSearchList);
     }
 
     // Accessor method for final coordinate
     public Coordinate getFinalCoordinate() {
-        return FinalCoordinate;
-    }
-
-    // Mutator method for final coordinate
-    public void setFinalCoordinate(Coordinate finalCoordinate) {
-        this.FinalCoordinate = finalCoordinate;
+        return finalCoordinate;
     }
 
     // Accessor method for function
@@ -208,63 +181,59 @@ public class PowellMethod extends Thread implements Serializable {
     }
 
     // Accessor method for fatal exception boolean
-    public boolean isEvaluationExceptionOccured() {
-        return EvaluationExceptionOccured;
+    public boolean isEvaluationExceptionOccurred() {
+        return evaluationExceptionOccurred;
     }
 
     // Mutator method for fatal exception
     public void setEvaluationExceptionOccured() {
-        EvaluationExceptionOccured = true;
+        evaluationExceptionOccurred = true;
     }
 
     public boolean isThreadStopped() {
-        return ThreadStoppedFlag;
+        return threadStoppedFlag;
     }
 
     public void setThreadStopped() {
-        this.ThreadStoppedFlag = true;
+        threadStoppedFlag = true;
     }
 
     public void runTwoDimensionAdjustment() {
         ArrayList<Coordinate> NewUnitVectorList = new ArrayList<>();
         ArrayList<Coordinate> NewConjugateList = new ArrayList<>();
         try {
-            for (Coordinate CoordinateStepper : getConjugateDirectionSearchList()) {
-                Coordinate newCoordinate = new Coordinate(CoordinateStepper.getXValue(), Function.evaluate(new Coordinate(CoordinateStepper.getXValue(), 0D)));
+            for (Coordinate CoordinateStepper : exponentialSearchList) {
+                Coordinate newCoordinate = new Coordinate(CoordinateStepper.getXValue(), Function.evaluate(new Coordinate(CoordinateStepper.getXValue(), 0.0D)));
                 NewUnitVectorList.add(newCoordinate);
             }
-            for (Coordinate CoordinateStepper : getUnitVectorSearchList()) {
-                Coordinate newCoordinate = new Coordinate(CoordinateStepper.getXValue(), Function.evaluate(new Coordinate(CoordinateStepper.getXValue(), 0D)));
+            for (Coordinate CoordinateStepper : unitVectorSearchList) {
+                Coordinate newCoordinate = new Coordinate(CoordinateStepper.getXValue(), Function.evaluate(new Coordinate(CoordinateStepper.getXValue(), 0.0D)));
                 NewConjugateList.add(newCoordinate);
             }
-            Coordinate FinalCoordinate = getFinalCoordinate();
-            setFinalCoordinate(new Coordinate(FinalCoordinate.getXValue(), Function.evaluate(new Coordinate(FinalCoordinate.getXValue(), 0D))));
-            setConjugateDirectionSearchList(NewConjugateList);
-            setUnitVectorSearchList(NewUnitVectorList);
+
+            finalCoordinate = new Coordinate(finalCoordinate.getXValue(), Function.evaluate(new Coordinate(finalCoordinate.getXValue(), 0.0D)));
+            exponentialSearchList = NewConjugateList;
+            unitVectorSearchList = NewUnitVectorList;
         } catch (EvaluationException CaughtException) {
             MainSceneController.getLog().add(CaughtException.getMessage());
         }
     }
 
     public int getOptimisationCounter() {
-        return OptimisationCounter;
-    }
-
-    public void setOptimisationCounter(int optimisationCounter) {
-        OptimisationCounter = optimisationCounter;
+        return optimisationCounter;
     }
 
     // Exponential Search Inner Class
     public class ExponentialSearch {
         // Private Fields
-        private Coordinate StartPoint;
+        private final Coordinate StartPoint;
+        private final ArrayList<Coordinate> OptimisedCoordinateList = new ArrayList<>();
+        private final double Tolerance;
         private double XVector;
         private double YVector;
         private Coordinate FinalCoordinate;
-        private ArrayList<Coordinate> OptimisedCoordinateList = new ArrayList<>();
-        private double Tolerance;
         private int OptimisationCounter;
-        private boolean divergenceDetected = false;
+        private boolean divergenceDetected;
 
         public ExponentialSearch(Coordinate StartPoint, double Tolerance) {
             this.StartPoint = StartPoint;
@@ -275,42 +244,39 @@ public class PowellMethod extends Thread implements Serializable {
             return divergenceDetected;
         }
 
-        public void setDivergenceDetected(boolean divergenceDetected) {
-            this.divergenceDetected = divergenceDetected;
-        }
-
         public Coordinate getFinalCoordinate() {
             return FinalCoordinate;
         }
 
-        public void setFinalCoordinate(Coordinate FinalCoordinate) {
-            this.FinalCoordinate = FinalCoordinate;
-        }
-
-        public ArrayList<Coordinate> getOptimisedCoordinateList() {
-            return OptimisedCoordinateList;
+        public List<Coordinate> getOptimisedCoordinateList() {
+            return Collections.unmodifiableList(OptimisedCoordinateList);
         }
 
         public void startSearch() throws EvaluationException {
-            this.setOptimisationCounter(0);
+            OptimisationCounter = 0;
             OptimisedCoordinateList.add(StartPoint);
             // Declare local variables
-            int MaximumPowerof2 = 2;  // Start at 2 so that 0,1 & 2 can be used initially
-            Coordinate CoordinateAtPowerNMinus2 = StartPoint, CoordinateAtPowerNMinus1, CoordinateAtPowerN;
-            double TempXValue, TempYValue;
-            double FOfCoordinate1, FOfCoordinate2, FOfCoordinate3;
+            int MaximumPowerOf2 = 2;  // Start at 2 so that 0,1 & 2 can be used initially
+            Coordinate CoordinateAtPowerNMinus2 = StartPoint;
+            Coordinate CoordinateAtPowerNMinus1;
+            Coordinate CoordinateAtPowerN;
+            double TempXValue;
+            double TempYValue;
+            double FOfCoordinate1;
+            double FOfCoordinate2;
+            double FOfCoordinate3;
             // while loop to increase the power of 2
             while (true) {
-                this.setOptimisationCounter(this.getOptimisationCounter() + 1);
+                OptimisationCounter = OptimisationCounter + 1;
                 // generate three coordinates with three different powers
-                TempXValue = CoordinateAtPowerNMinus2.getXValue() + scaleVectorByPowerOf2(XVector, MaximumPowerof2 - 2);
-                TempYValue = CoordinateAtPowerNMinus2.getYValue() + scaleVectorByPowerOf2(YVector, MaximumPowerof2 - 2);
+                TempXValue = CoordinateAtPowerNMinus2.getXValue() + scaleVectorByPowerOf2(XVector, MaximumPowerOf2 - 2);
+                TempYValue = CoordinateAtPowerNMinus2.getYValue() + scaleVectorByPowerOf2(YVector, MaximumPowerOf2 - 2);
                 CoordinateAtPowerNMinus2 = new Coordinate(TempXValue, TempYValue);
-                TempXValue = CoordinateAtPowerNMinus2.getXValue() + scaleVectorByPowerOf2(XVector, MaximumPowerof2 - 1);
-                TempYValue = CoordinateAtPowerNMinus2.getYValue() + scaleVectorByPowerOf2(YVector, MaximumPowerof2 - 1);
+                TempXValue = CoordinateAtPowerNMinus2.getXValue() + scaleVectorByPowerOf2(XVector, MaximumPowerOf2 - 1);
+                TempYValue = CoordinateAtPowerNMinus2.getYValue() + scaleVectorByPowerOf2(YVector, MaximumPowerOf2 - 1);
                 CoordinateAtPowerNMinus1 = new Coordinate(TempXValue, TempYValue);
-                TempXValue = CoordinateAtPowerNMinus2.getXValue() + scaleVectorByPowerOf2(XVector, MaximumPowerof2);
-                TempYValue = CoordinateAtPowerNMinus2.getYValue() + scaleVectorByPowerOf2(YVector, MaximumPowerof2);
+                TempXValue = CoordinateAtPowerNMinus2.getXValue() + scaleVectorByPowerOf2(XVector, MaximumPowerOf2);
+                TempYValue = CoordinateAtPowerNMinus2.getYValue() + scaleVectorByPowerOf2(YVector, MaximumPowerOf2);
                 CoordinateAtPowerN = new Coordinate(TempXValue, TempYValue);
 
                 FOfCoordinate1 = Function.evaluate(CoordinateAtPowerNMinus2);
@@ -320,25 +286,23 @@ public class PowellMethod extends Thread implements Serializable {
                     break;
                 } else {
                     // Condition detects divergence
-                    if (MaximumPowerof2 > Math.pow((Math.ceil(Math.abs(getBounds()))), 8)) {
-                        setDivergenceDetected(true);
+                    if (MaximumPowerOf2 > Math.pow(Math.ceil(Math.abs(getBounds())), 8.0)) {
+                        divergenceDetected = true;
                         return;
                     }
-                    MaximumPowerof2 += 1;
+                    MaximumPowerOf2 += 1;
                     OptimisedCoordinateList.add(CoordinateAtPowerN);
                 }
             }
             // minimum is now bracketed by coordinate 1 and coordinate 3
             // begin 2D binary search
-            double MidpointX = (CoordinateAtPowerNMinus2.getXValue() + CoordinateAtPowerN.getXValue()) / 2;
-            double MidpointY = (CoordinateAtPowerNMinus2.getYValue() + CoordinateAtPowerN.getYValue()) / 2;
+            double MidpointX = (CoordinateAtPowerNMinus2.getXValue() + CoordinateAtPowerN.getXValue()) / 2.0;
+            double MidpointY = (CoordinateAtPowerNMinus2.getYValue() + CoordinateAtPowerN.getYValue()) / 2.0;
             Coordinate Midpoint = new Coordinate(MidpointX, MidpointY);
-            Coordinate UpperBound, LowerBound;
-            UpperBound = CoordinateAtPowerN;
-            LowerBound = CoordinateAtPowerNMinus2;
-            double FOfUpperBound, FOfLowerBound;
-            FOfLowerBound = Function.evaluate(LowerBound);
-            FOfUpperBound = Function.evaluate(UpperBound);
+            Coordinate UpperBound = CoordinateAtPowerN;
+            Coordinate LowerBound = CoordinateAtPowerNMinus2;
+            double FOfUpperBound = Function.evaluate(UpperBound);
+            double FOfLowerBound = Function.evaluate(LowerBound);
             OptimisedCoordinateList.add(Midpoint);
             while (true) {
                 if (FOfLowerBound > FOfUpperBound) {
@@ -347,14 +311,14 @@ public class PowellMethod extends Thread implements Serializable {
                 if (FOfUpperBound > FOfLowerBound) {
                     UpperBound = Midpoint;
                 }
-                MidpointX = (UpperBound.getXValue() + LowerBound.getXValue()) / 2;
-                MidpointY = (UpperBound.getYValue() + LowerBound.getYValue()) / 2;
+                MidpointX = (UpperBound.getXValue() + LowerBound.getXValue()) / 2.0;
+                MidpointY = (UpperBound.getYValue() + LowerBound.getYValue()) / 2.0;
                 Coordinate NewMidpoint = new Coordinate(MidpointX, MidpointY);
                 OptimisedCoordinateList.add(NewMidpoint);
                 double FOfCurrentCoordinate = Function.evaluate(OptimisedCoordinateList.get(OptimisedCoordinateList.size() - 1));
                 double FOfLastCoordinate = Function.evaluate(OptimisedCoordinateList.get(OptimisedCoordinateList.size() - 2));
                 if (Math.abs(FOfCurrentCoordinate - FOfLastCoordinate) < Tolerance) {
-                    setFinalCoordinate(OptimisedCoordinateList.get(OptimisedCoordinateList.size() - 1));
+                    FinalCoordinate = OptimisedCoordinateList.get(OptimisedCoordinateList.size() - 1);
                     break;
                 }
             }
@@ -368,36 +332,25 @@ public class PowellMethod extends Thread implements Serializable {
             return XVector;
         }
 
-        public void setXVector(double XVector) {
-            this.XVector = XVector;
-        }
-
         public double getYVector() {
             return YVector;
         }
 
-        public void setYVector(double YVector) {
-            this.YVector = YVector;
-        }
-
         private double scaleVectorByPowerOf2(double vector, int power) {
-            return vector * Math.pow(2, power);
+            return vector * Math.pow(2.0, power);
         }
 
         // sets the vectors on the object
-        public void setVector(Coordinate one, Coordinate two) {
-            double DeltaY = two.getYValue() - one.getYValue();
-            double DeltaX = two.getXValue() - one.getXValue();
-            setXVector(DeltaX);
-            setYVector(DeltaY);
+        public void setVector(Coordinate firstCoordinate, Coordinate secondCoordinate) {
+            double DeltaY = secondCoordinate.getYValue() - firstCoordinate.getYValue();
+            YVector = DeltaY;
+            XVector = secondCoordinate.getXValue() - firstCoordinate.getXValue();
+
         }
 
         public int getOptimisationCounter() {
             return OptimisationCounter;
         }
 
-        public void setOptimisationCounter(int optimisationCounter) {
-            OptimisationCounter = optimisationCounter;
-        }
     }
 }

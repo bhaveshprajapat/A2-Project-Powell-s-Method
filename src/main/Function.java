@@ -15,28 +15,24 @@ public class Function implements Serializable {
     private static void convertInfixToRPN() {
         Stack<String> OperatorStack = new Stack<>();
         StringBuilder OutputBuilder = new StringBuilder();
-        Function.InfixExpression = removeAllSpaces(getInfixExpression());
-        String[] UncheckedTokens = tokeniseString(getInfixExpression());
+        InfixExpression = removeAllSpaces(InfixExpression);
+        String[] UncheckedTokens = tokeniseString(InfixExpression);
         // Check tokens
         String[] CheckedTokens = checkTokens(UncheckedTokens);
         for (String currentToken : CheckedTokens) {
             if (checkIfOperand(currentToken)) {
-                OutputBuilder.append(currentToken).append(",");
+                OutputBuilder.append(currentToken).append(',');
             } else if (isLeftParenthesis(currentToken)) {
                 OperatorStack.push(currentToken);
             } else if (isRightParenthesis(currentToken)) {
                 while (!isLeftParenthesis(OperatorStack.peek())) {
-                    OutputBuilder.append(OperatorStack.pop()).append(",");
+                    OutputBuilder.append(OperatorStack.pop()).append(',');
                 }
                 OperatorStack.pop();
             } else if (isOperator(currentToken)) {
-                while (true) {
-                    if (!OperatorStack.isEmpty()) {
-                        if (isHigherPrecedence(currentToken, OperatorStack.peek())) {
-                            OutputBuilder.append(OperatorStack.pop()).append(",");
-                        } else {
-                            break;
-                        }
+                while (!OperatorStack.isEmpty()) {
+                    if (isHigherPrecedence(currentToken, OperatorStack.peek())) {
+                        OutputBuilder.append(OperatorStack.pop()).append(',');
                     } else {
                         break;
                     }
@@ -47,10 +43,10 @@ public class Function implements Serializable {
             }
         }
         while (!OperatorStack.isEmpty()) {
-            OutputBuilder.append(OperatorStack.pop()).append(",");
+            OutputBuilder.append(OperatorStack.pop()).append(',');
         }
         String finalResult = OutputBuilder.toString();
-        Function.setPostfixExpression(finalResult.substring(0, finalResult.length() - 1));
+        PostfixExpression = finalResult.substring(0, finalResult.length() - 1);
     }
 
     // Is the parameterised token a RIGHT PARENTHESIS?
@@ -60,7 +56,7 @@ public class Function implements Serializable {
 
     // Is the parameterised token an OPERATOR?
     private static boolean isOperator(String currentToken) {
-        return currentToken.matches("[*/+\\-\\^(]|s|c|t");
+        return currentToken.matches("[*/+\\-^(]|s|c|t");
     }
 
     // Compare the BIDMAS (extended) for each parameterised operator
@@ -107,14 +103,6 @@ public class Function implements Serializable {
         return stringToTokenise.split("(?<=[-+^*/()])|(?=[-+*/()^])|(?=[a-z])|(?<=.[a-z])|(?<=[a-z])");
     }
 
-    private static String getPostfixExpression() {
-        return Function.PostfixExpression;
-    }
-
-    public static void setPostfixExpression(String postfixExpression) {
-        Function.PostfixExpression = postfixExpression;
-    }
-
     public static double evaluate(Coordinate coordinateToUse) throws EvaluationException {
         /*
             Work through each token in the array, pushing
@@ -122,9 +110,11 @@ public class Function implements Serializable {
             an operator is encountered
          */
         Stack<String> OperandStack = new Stack<>();
-        String[] Tokens = getPostfixExpression().split(",");
-        double LeftOperandDouble, RightOperandDouble;
-        String LeftOperand, RightOperand;
+        String[] Tokens = PostfixExpression.split(",");
+        double LeftOperandDouble;
+        double RightOperandDouble;
+        String LeftOperand;
+        String RightOperand;
         for (String TokenStepper : Tokens) {
             // If the current token is an operator pop items off the stack
             if (isOperator(TokenStepper)) {
@@ -133,7 +123,7 @@ public class Function implements Serializable {
                 try {
                     // Attempt to pop a second item off of the stack
                     LeftOperand = OperandStack.pop();
-                } catch (EmptyStackException emptyStackException) {
+                } catch (EmptyStackException ignored) {
                     throw new EvaluationException("Expression has too many operands");
                 }
                 // Attempt numeric conversion
@@ -156,7 +146,6 @@ public class Function implements Serializable {
                             break;
                         default:
                             // a letter has been used that has no known value
-                            System.out.println("ERR");
                             throw new EvaluationException("Unrecognised operand: " + LeftOperand);
                     }
                 }
@@ -180,7 +169,6 @@ public class Function implements Serializable {
                             break;
                         default:
                             // A letter has been used that has no known value
-                            System.out.println("ERR");
                             throw new EvaluationException("Unrecognised operand: " + LeftOperand);
                     }
                 }
@@ -222,7 +210,7 @@ public class Function implements Serializable {
 
     // Accessor method for the infix expression
     public static String getInfixExpression() {
-        return Function.InfixExpression;
+        return InfixExpression;
     }
 
     // Mutator method for the infix expression
@@ -242,7 +230,7 @@ public class Function implements Serializable {
                     // No need to keep a value in this space
                     UncheckedTokenArray[Stepper] = "";
                     // Prefix the minus sign to the adjacent array value
-                    UncheckedTokenArray[Stepper + 1] = "-" + UncheckedTokenArray[Stepper + 1];
+                    UncheckedTokenArray[Stepper + 1] = '-' + UncheckedTokenArray[Stepper + 1];
                     continue;
                 }
                 // Check for any omitted multiplication signs before brackets
@@ -253,8 +241,8 @@ public class Function implements Serializable {
 
             if (Stepper == 0) {
                 // Tests for a '-' at the beginning of the expression
-                if ("-".equals(UncheckedTokenArray[Stepper])) {
-                    UncheckedTokenArray[Stepper + 1] = "-" + UncheckedTokenArray[Stepper + 1];
+                if ("-".equals(UncheckedTokenArray[0])) {
+                    UncheckedTokenArray[1] = '-' + UncheckedTokenArray[1];
                     // Current token is obsolete
                     CheckedTokensList.add(UncheckedTokenArray[Stepper]);
                     continue;
@@ -262,7 +250,7 @@ public class Function implements Serializable {
             }
             CheckedTokensList.add(UncheckedTokenArray[Stepper]);
         }
-        return CheckedTokensList.toArray(new String[0]);
+        return CheckedTokensList.toArray(new String[CheckedTokensList.size()]);
     }
 
     // Removes all spaces in a String
@@ -275,7 +263,4 @@ public class Function implements Serializable {
         return Input;
     }
 
-    private static double log(double base, double operand) {
-        return Math.log(operand) / Math.log(base);
-    }
 }

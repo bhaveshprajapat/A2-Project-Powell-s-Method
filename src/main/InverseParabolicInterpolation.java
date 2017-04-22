@@ -10,11 +10,9 @@ public class InverseParabolicInterpolation extends LinMin {
         Coordinate PreviousGuess = getStartPoint();
         Coordinate NextGuess;
         // Create direction vectors and set their values
-        int VectorX, VectorY;
-        boolean OptimisingByX;
-        OptimisingByX = (getSearchDirection() == SearchDirection.VECTOR_I);
-        VectorX = OptimisingByX ? 1 : 0;
-        VectorY = OptimisingByX ? 0 : 1;
+        boolean OptimisingByX = getSearchDirection() == SearchDirection.VECTOR_I;
+        int VectorX = OptimisingByX ? 1 : 0;
+        int VectorY = OptimisingByX ? 0 : 1;
         // Creates lower boundary
         double LowerBoundaryXValue = PreviousGuess.getXValue() - (VectorX * getBounds());
         double LowerBoundaryYValue = PreviousGuess.getYValue() - (VectorY * getBounds());
@@ -26,7 +24,9 @@ public class InverseParabolicInterpolation extends LinMin {
 
         while (true) {
 
-            double a, b, c;
+            double a;
+            double b;
+            double c;
             if (OptimisingByX) {
                 a = LowerBoundary.getXValue();
                 b = PreviousGuess.getXValue();
@@ -39,10 +39,10 @@ public class InverseParabolicInterpolation extends LinMin {
             LinMin.setCounter(LinMin.getCounter() + 1);
 
 
-            double numerator = Math.pow(b - a, 2) * (Function.evaluate(PreviousGuess) - Function.evaluate(UpperBoundary)) - Math.pow(b - c, 2) * (Function.evaluate(PreviousGuess) - Function.evaluate(LowerBoundary));
-            double denominator = (b - a) * (Function.evaluate(PreviousGuess) - Function.evaluate(UpperBoundary)) - (b - c) * (Function.evaluate(PreviousGuess) - Function.evaluate(LowerBoundary));
+            double numerator = (Math.pow(b - a, 2.0) * (Function.evaluate(PreviousGuess) - Function.evaluate(UpperBoundary))) - (StrictMath.pow(b - c, 2.0) * (Function.evaluate(PreviousGuess) - Function.evaluate(LowerBoundary)));
+            double denominator = ((b - a) * (Function.evaluate(PreviousGuess) - Function.evaluate(UpperBoundary))) - ((b - c) * (Function.evaluate(PreviousGuess) - Function.evaluate(LowerBoundary)));
 
-            double interpolate = b - 0.5 * (numerator / denominator);
+            double interpolate = b - (0.5 * (numerator / denominator));
 
             if (OptimisingByX) {
                 NextGuess = new Coordinate(interpolate, PreviousGuess.getYValue());
