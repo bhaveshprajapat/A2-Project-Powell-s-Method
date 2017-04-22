@@ -6,11 +6,11 @@ package main;
 public abstract class LinMin {
     private static int Counter;
     // Private fields
-    private double Tolerance;
-    private double Bounds;
-    private Coordinate StartPoint;
-    private SearchDirection SearchDirection;
-    private Coordinate FinalCoordinate;
+    private double tolerance;
+    private double bounds;
+    private Coordinate startPoint;
+    private SearchDirection searchDirection;
+    private Coordinate finalCoordinate;
 
     public static int getCounter() {
         return Counter;
@@ -22,52 +22,52 @@ public abstract class LinMin {
 
     // Accessor method for tolerance field
     public double getTolerance() {
-        return Tolerance;
+        return tolerance;
     }
 
     //Mutator method for tolerance field
     public void setTolerance(double tolerance) {
-        this.Tolerance = tolerance;
+        this.tolerance = tolerance;
     }
 
     // Accessor method for bounds field
     public double getBounds() {
-        return Bounds;
+        return bounds;
     }
 
     // Mutator method for bounds field
     public void setBounds(double bounds) {
-        this.Bounds = bounds;
+        this.bounds = bounds;
     }
 
     // Accessor method for start point coordinate field
     public Coordinate getStartPoint() {
-        return StartPoint;
+        return startPoint;
     }
 
     // Mutator method for start point coordinate field
     public void setStartPoint(Coordinate startPoint) {
-        StartPoint = startPoint;
+        this.startPoint = startPoint;
     }
 
     // Accessor method for search direction field
     public SearchDirection getSearchDirection() {
-        return SearchDirection;
+        return searchDirection;
     }
 
     // Mutator method for search direction field
     public void setSearchDirection(SearchDirection searchDirection) {
-        this.SearchDirection = searchDirection;
+        this.searchDirection = searchDirection;
     }
 
     // Accessor method for final coordinate field
     public Coordinate getFinalCoordinate() {
-        return FinalCoordinate;
+        return finalCoordinate;
     }
 
     // Mutator method for final coordinate field
     public void setFinalCoordinate(Coordinate finalCoordinate) {
-        this.FinalCoordinate = finalCoordinate;
+        this.finalCoordinate = finalCoordinate;
     }
 
     /*
