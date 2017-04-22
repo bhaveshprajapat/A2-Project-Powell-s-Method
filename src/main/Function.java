@@ -274,4 +274,8 @@ public class Function implements Serializable {
         }
         return Input;
     }
+
+    private static double log(double base, double operand) {
+        return Math.log(operand) / Math.log(base);
+    }
 }

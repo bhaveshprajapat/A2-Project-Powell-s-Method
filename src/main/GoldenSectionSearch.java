@@ -1,5 +1,9 @@
 package main;
 
+/*
+    Class to perform a golden section search in one dimension
+ */
+
 public class GoldenSectionSearch extends LinMin {
     @Override
     void startSearch() throws EvaluationException {

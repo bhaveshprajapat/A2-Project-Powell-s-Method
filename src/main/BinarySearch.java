@@ -1,7 +1,9 @@
 package main;
 
+/*
+    Class to perform a Binary Search in one dimension
+ */
 public class BinarySearch extends LinMin {
-    // Binary search in one dimension
     @Override
     void startSearch() throws EvaluationException {
         Coordinate PreviousCoordinate = getStartPoint();

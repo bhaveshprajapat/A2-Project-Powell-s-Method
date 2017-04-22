@@ -8,7 +8,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <VBox xmlns:fx="http://javafx.com/fxml/1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
-      minWidth="-Infinity" prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8.0.101"
+      minWidth="-Infinity" prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8.0.112"
       fx:controller="main.MainSceneController">
     <!-- Splitpane holds menu items -->
     <MenuBar>
@@ -20,6 +20,8 @@
             <SeparatorMenuItem mnemonicParsing="false"/>
             <MenuItem mnemonicParsing="false" onAction="#setBinarySearchMode" text="Binary Search"/>
             <MenuItem mnemonicParsing="false" onAction="#setGoldenSectionSearchMode" text="Golden Section Search"/>
+            <MenuItem mnemonicParsing="false" onAction="#setInverseParabolicInterpolationSearchMode"
+                      text="Inverse Parabolic Interpolation"/>
         </Menu>
         <Menu mnemonicParsing="false" text="Inbuilt Functions">
             <MenuItem disable="true" mnemonicParsing="false"
@@ -148,26 +150,11 @@
                                 <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
                             </HBox.margin>
                         </Button>
-                        <Button mnemonicParsing="false" text="sec">
-                            <HBox.margin>
-                                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
-                            </HBox.margin>
-                        </Button>
-                        <Button mnemonicParsing="false" text="csc">
-                            <HBox.margin>
-                                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
-                            </HBox.margin>
-                        </Button>
                         <GridPane.margin>
                             <Insets bottom="1.0" left="1.0" right="1.0" top="1.0"/>
                         </GridPane.margin>
                     </HBox>
                     <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1">
-                        <Button mnemonicParsing="false" text="cot" HBox.hgrow="ALWAYS">
-                            <HBox.margin>
-                                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
-                            </HBox.margin>
-                        </Button>
                         <Button mnemonicParsing="false" onAction="#addSinSquared" text="sin^2" HBox.hgrow="ALWAYS">
                             <HBox.margin>
                                 <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>

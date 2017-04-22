@@ -36,6 +36,9 @@ public class PowellMethod extends Thread implements Serializable {
                 // Load a golden section search object
                 setLinMin(new GoldenSectionSearch());
                 break;
+            case INVERSE_PARABOLIC_INTERPOLATION:
+                setLinMin(new InverseParabolicInterpolation());
+                break;
         }
     }
 

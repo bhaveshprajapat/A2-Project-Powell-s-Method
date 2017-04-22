@@ -133,6 +133,16 @@ public class MainSceneController {
         SearchAlgorithmIndicator.setText("Binary Search");
     }
 
+    public void setInverseParabolicInterpolationSearchMode(ActionEvent actionEvent) {
+        /*
+            Switches the search mode to Parabolic Interpolation
+            and changes the text box to reflect this.
+         */
+        AlgorithmToUse = SearchMethod.INVERSE_PARABOLIC_INTERPOLATION;
+        SearchAlgorithmIndicator.setText("Inverse Parabolic Interpolation");
+    }
+
+
     public void setGoldenSectionSearchMode(ActionEvent actionEvent) {
         /*
             Switches the search mode to Golden Section
@@ -492,37 +502,37 @@ public class MainSceneController {
 
     //adds sin to the text field
     public void addSin(ActionEvent actionEvent) {
-        FunctionTextField.setText(FunctionTextField.getText() + "()sin1");
+        FunctionTextField.setText(FunctionTextField.getText() + "(OPERAND)sin1");
     }
 
     //adds cos to the text field
     public void AddCos(ActionEvent actionEvent) {
-        FunctionTextField.setText(FunctionTextField.getText() + "()cos1");
+        FunctionTextField.setText(FunctionTextField.getText() + "(OPERAND)cos1");
     }
 
     // adds tan to the text field
     public void AddTan(ActionEvent actionEvent) {
-        FunctionTextField.setText(FunctionTextField.getText() + "()tan1");
+        FunctionTextField.setText(FunctionTextField.getText() + "(OPERAND)tan1");
     }
 
     // adds sin2 to the text field
     public void addSinSquared(ActionEvent actionEvent) {
-        FunctionTextField.setText(FunctionTextField.getText() + "()sin2");
+        FunctionTextField.setText(FunctionTextField.getText() + "(OPERAND)sin2");
     }
 
     // adds cos2 to the function text field
     public void addCosSquared(ActionEvent actionEvent) {
-        FunctionTextField.setText(FunctionTextField.getText() + "()cos2");
+        FunctionTextField.setText(FunctionTextField.getText() + "(OPERAND)cos2");
     }
 
     // adds tan2 to the function text field
     public void addTanSquared(ActionEvent actionEvent) {
-        FunctionTextField.setText(FunctionTextField.getText() + "()tan2");
+        FunctionTextField.setText(FunctionTextField.getText() + "(OPERAND)tan2");
     }
 
     // adds e to the function text field
     public void addE(ActionEvent actionEvent) {
-        FunctionTextField.setText(FunctionTextField.getText() + "e^()");
+        FunctionTextField.setText(FunctionTextField.getText() + "e^(OPERAND)");
     }
 
     // adds pi to the function text field
@@ -583,4 +593,5 @@ public class MainSceneController {
         MainSceneGraph.setTitle("No results to show");
         MainSceneGraph.setOpacity(0.25);
     }
+
 }
