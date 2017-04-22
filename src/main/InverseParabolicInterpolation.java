@@ -24,9 +24,9 @@ public class InverseParabolicInterpolation extends LinMin {
 
         while (true) {
 
-            double a;
-            double b;
-            double c;
+            double a; // Lower bound
+            double b; // Current guess
+            double c; // Upper bound
             if (OptimisingByX) {
                 a = LowerBoundary.getXValue();
                 b = PreviousGuess.getXValue();
