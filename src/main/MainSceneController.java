@@ -263,11 +263,11 @@ public class MainSceneController {
             for (File FileStepper : files) {
                 if (FileStepper != null) {
 
-                        FileInputStream fileInputStream = new FileInputStream(FileStepper);
-                        ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-                        LoadedResults = (PowellMethod) objectInputStream.readObject();
-                        objectInputStream.close();
-                        fileInputStream.close();
+                    FileInputStream fileInputStream = new FileInputStream(FileStepper);
+                    ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+                    LoadedResults = (PowellMethod) objectInputStream.readObject();
+                    objectInputStream.close();
+                    fileInputStream.close();
 
                     if (LoadedResults != null) {
                         ProgressIndicator.setProgress(1.0);
@@ -323,27 +323,36 @@ public class MainSceneController {
         ProgressIndicator.setProgress(javafx.scene.control.ProgressIndicator.INDETERMINATE_PROGRESS);
 
         // Validate and initialise all variables
+        Alert BadInputAlert = new Alert(AlertType.ERROR);
+        BadInputAlert.setTitle("Invalid input in one or more boxes");
+        BadInputAlert.setHeaderText("The following input was not recognised:");
         double StartPointX;
         double StartPointY;
         double Bounds;
         double Tolerance = Math.pow(0.1, ToleranceSlider.getValue());
-        StartPointX = Double.parseDouble(StartPointXTextField.getText());
-        StartPointY = Double.parseDouble(StartPointYTextField.getText());
-        Bounds = Double.parseDouble(BoundsTextField.getText());
-        if ((Bounds <= 0.0D) || (Bounds == 1)) {
-            Alert BadInputAlert = new Alert(AlertType.ERROR);
-            BadInputAlert.setTitle("Invalid input in one or more boxes");
-            BadInputAlert.setHeaderText("The following input was not recognised:");
-            BadInputAlert.setContentText("The bounds must be a decimal value greater than 0, and not equal to 1.");
+
+        try {
+            StartPointX = Double.parseDouble(StartPointXTextField.getText());
+            StartPointY = Double.parseDouble(StartPointYTextField.getText());
+        } catch (NumberFormatException e) {
+            BadInputAlert.setContentText("One or both of the Start Point coordinates was not numeric: " + e.getLocalizedMessage());
+            BadInputAlert.show();
+            return;
+        }
+
+        try {
+            Bounds = Double.parseDouble(BoundsTextField.getText());
+            if (Bounds <= 0.0D) {
+                throw new NumberFormatException("Value supplied was not greater than 0");
+            }
+        } catch (NumberFormatException e) {
+            BadInputAlert.setContentText("The bounds must be a decimal value greater than zero: " + e.getLocalizedMessage());
             BadInputAlert.show();
             ProgressIndicator.setProgress(0);
             return;
         }
         // Initialise Function
-        if ((FunctionTextField.getText() != null) && FunctionTextField.getText().isEmpty()) {
-            Alert BadInputAlert = new Alert(AlertType.ERROR);
-            BadInputAlert.setTitle("Invalid input in function text field");
-            BadInputAlert.setHeaderText("No entry in the function text field");
+        if (FunctionTextField.getText().isEmpty()) {
             BadInputAlert.setContentText("The function text field must not be left blank, please revise.");
             BadInputAlert.show();
             ProgressIndicator.setProgress(0);

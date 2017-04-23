@@ -29,12 +29,8 @@ public class Function {
                 }
                 OperatorStack.pop(); // Pop the ), without appending to output
             } else if (isOperator(currentToken)) {
-                while (!OperatorStack.isEmpty()) {
-                    if (isHigherPrecedence(currentToken, OperatorStack.peek())) {
+                while (!OperatorStack.isEmpty() && isHigherPrecedence(currentToken, OperatorStack.peek())) {
                         OutputBuilder.append(OperatorStack.pop()).append(','); // Pop and output anything with a higher precedence first
-                    } else {
-                        break;
-                    }
                 }
                 OperatorStack.push(currentToken); // Pop the operator to the output
             } else {

@@ -16,8 +16,8 @@ public class Main extends Application {
     }
     @Override
     public void start(Stage primaryStage) throws Exception {
-        final Class<? extends Main> aClass = getClass();
-        Parent root = FXMLLoader.load(aClass.getResource("mainScene.fxml"));
+        final Class<? extends Main> startClass = getClass();
+        Parent root = FXMLLoader.load(startClass.getResource("mainScene.fxml"));
         primaryStage.setTitle("Powell's Conjugate Direction Method");
         primaryStage.setScene(new Scene(root, 1000.0, 700.0));
         primaryStage.setMaximized(true);

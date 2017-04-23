@@ -7,31 +7,38 @@ public class InverseParabolicInterpolation extends LinMin {
 
     @Override
     void startSearch() throws EvaluationException {
-        // Initialise placeholder variables
-        Coordinate PreviousGuess = getStartPoint();
-        Coordinate NextGuess;
+        // Initialise variables
+        Coordinate PreviousGuess, NextGuess;
+        int VectorX, VectorY;
+        boolean OptimisingByX;
+        double LowerBoundaryXValue, LowerBoundaryYValue;
+        double UpperBoundaryXValue, UpperBoundaryYValue;
+        double numerator, denominator, interpolatedValue;
+        Coordinate LowerBoundary, UpperBoundary;
+        /*
+            a, b & c are named as such to ease readability
+        */
+        double a; // Lower bound
+        double b; // Current guess
+        double c; // Upper bound
+        PreviousGuess = getStartPoint(); // Initialise first guess
         // Create direction vectors and set their values
-        boolean OptimisingByX = getSearchDirection() == SearchDirection.VECTOR_I;
-        int VectorX = OptimisingByX ? 1 : 0;
-        int VectorY = OptimisingByX ? 0 : 1;
+        OptimisingByX = getSearchDirection() == SearchDirection.VECTOR_I;
+        VectorX = OptimisingByX ? 1 : 0;
+        VectorY = OptimisingByX ? 0 : 1;
         // Creates lower boundary
-        double LowerBoundaryXValue = PreviousGuess.getXValue() - (VectorX * getBounds());
-        double LowerBoundaryYValue = PreviousGuess.getYValue() - (VectorY * getBounds());
-        Coordinate LowerBoundary = new Coordinate(LowerBoundaryXValue, LowerBoundaryYValue);
+        LowerBoundaryXValue = PreviousGuess.getXValue() - (VectorX * getBounds());
+        LowerBoundaryYValue = PreviousGuess.getYValue() - (VectorY * getBounds());
+        LowerBoundary = new Coordinate(LowerBoundaryXValue, LowerBoundaryYValue);
         // Creates upper boundary
-        double UpperBoundaryXValue = PreviousGuess.getXValue() + (VectorX * getBounds());
-        double UpperBoundaryYValue = PreviousGuess.getYValue() + (VectorY * getBounds());
-        Coordinate UpperBoundary = new Coordinate(UpperBoundaryXValue, UpperBoundaryYValue);
+        UpperBoundaryXValue = PreviousGuess.getXValue() + (VectorX * getBounds());
+        UpperBoundaryYValue = PreviousGuess.getYValue() + (VectorY * getBounds());
+        UpperBoundary = new Coordinate(UpperBoundaryXValue, UpperBoundaryYValue);
 
         while (true) {
             // Increment optimisation counter
             LinMin.setCounter(LinMin.getCounter() + 1);
-            /*
-                a, b & c are named as such to ease readability
-             */
-            double a; // Lower bound
-            double b; // Current guess
-            double c; // Upper bound
+
             // Initialise a, b and c
             if (OptimisingByX) {
                 a = LowerBoundary.getXValue();
@@ -43,9 +50,9 @@ public class InverseParabolicInterpolation extends LinMin {
                 c = UpperBoundary.getYValue();
             }
             // Calculate a new best guess through the inverse parabola
-            double numerator = (Math.pow(b - a, 2.0) * (Function.evaluate(PreviousGuess) - Function.evaluate(UpperBoundary))) - (Math.pow(b - c, 2.0) * (Function.evaluate(PreviousGuess) - Function.evaluate(LowerBoundary)));
-            double denominator = ((b - a) * (Function.evaluate(PreviousGuess) - Function.evaluate(UpperBoundary))) - ((b - c) * (Function.evaluate(PreviousGuess) - Function.evaluate(LowerBoundary)));
-            double interpolatedValue = b - (0.5 * (numerator / denominator));
+            numerator = (Math.pow(b - a, 2.0) * (Function.evaluate(PreviousGuess) - Function.evaluate(UpperBoundary))) - (Math.pow(b - c, 2.0) * (Function.evaluate(PreviousGuess) - Function.evaluate(LowerBoundary)));
+            denominator = ((b - a) * (Function.evaluate(PreviousGuess) - Function.evaluate(UpperBoundary))) - ((b - c) * (Function.evaluate(PreviousGuess) - Function.evaluate(LowerBoundary)));
+            interpolatedValue = b - (0.5 * (numerator / denominator));
             // Create a new coordinate with the interpolated value, and adjust either a or c to the previous guess
             if (OptimisingByX) {
                 NextGuess = new Coordinate(interpolatedValue, PreviousGuess.getYValue());

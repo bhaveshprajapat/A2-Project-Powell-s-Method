@@ -202,7 +202,7 @@ public class PowellMethod extends Thread implements Serializable {
 
     public void runTwoDimensionAdjustment() {
         ArrayList<Coordinate> NewUnitVectorList = new ArrayList<>();
-        ArrayList<Coordinate> NewExponentialList = new ArrayList<>();
+        List<Coordinate> NewExponentialList = new ArrayList<>();
         try {
             for (Coordinate CoordinateStepper : exponentialSearchList) {
                 Coordinate newCoordinate = new Coordinate(CoordinateStepper.getXValue(), Function.evaluate(new Coordinate(CoordinateStepper.getXValue(), 0.0D)));
@@ -228,7 +228,7 @@ public class PowellMethod extends Thread implements Serializable {
     public class ExponentialSearch {
         // Private Fields
         private final Coordinate StartPoint;
-        private final ArrayList<Coordinate> OptimisedCoordinateList = new ArrayList<>();
+        private final List<Coordinate> OptimisedCoordinateList = new ArrayList<>();
         private final double Tolerance;
         private double XVector;
         private double YVector;
@@ -252,7 +252,7 @@ public class PowellMethod extends Thread implements Serializable {
             return FinalCoordinate;
         }
 
-        // Accessor method for optimisied coordiante list (immutable)
+        // Accessor method for optimised coordinate list (immutable)
         public List<Coordinate> getOptimisedCoordinateList() {
             return Collections.unmodifiableList(OptimisedCoordinateList);
         }
@@ -291,7 +291,7 @@ public class PowellMethod extends Thread implements Serializable {
                 FOfCoordinate1 = Function.evaluate(CoordinateAtPowerNMinus2);
                 FOfCoordinate2 = Function.evaluate(CoordinateAtPowerNMinus1);
                 FOfCoordinate3 = Function.evaluate(CoordinateAtPowerN);
-                if ((FOfCoordinate3 > FOfCoordinate2) && (FOfCoordinate3 > FOfCoordinate1) || (FOfCoordinate1 > FOfCoordinate2) && (FOfCoordinate1 > FOfCoordinate3)) {
+                if (((FOfCoordinate3 > FOfCoordinate2) && (FOfCoordinate3 > FOfCoordinate1)) || ((FOfCoordinate1 > FOfCoordinate2) && (FOfCoordinate1 > FOfCoordinate3))) {
                     OptimisedCoordinateList.add(CoordinateAtPowerNMinus1);
                     OptimisedCoordinateList.add(CoordinateAtPowerN);
                     break;
@@ -310,18 +310,25 @@ public class PowellMethod extends Thread implements Serializable {
             /*
                 2D Binary Search
              */
+            // Initialise variables
+            double MidpointX, MidpointY;
+            double FOfUpperBound, FOfLowerBound;
+            Coordinate LoopMidpoint;
+            Coordinate UpperBound, LowerBound;
+            Coordinate NewMidpoint;
+            double FOfCurrentCoordinate, FOfLastCoordinate;
             // Calculate midpoint
-            double MidpointX = (CoordinateAtPowerNMinus2.getXValue() + CoordinateAtPowerN.getXValue()) / 2.0;
-            double MidpointY = (CoordinateAtPowerNMinus2.getYValue() + CoordinateAtPowerN.getYValue()) / 2.0;
-            Coordinate LoopMidpoint = new Coordinate(MidpointX, MidpointY);
+            MidpointX = (CoordinateAtPowerNMinus2.getXValue() + CoordinateAtPowerN.getXValue()) / 2.0;
+            MidpointY = (CoordinateAtPowerNMinus2.getYValue() + CoordinateAtPowerN.getYValue()) / 2.0;
+            LoopMidpoint = new Coordinate(MidpointX, MidpointY);
             // Calculate bounds
-            Coordinate UpperBound = new Coordinate(CoordinateAtPowerN.getXValue(), CoordinateAtPowerN.getYValue());
-            Coordinate LowerBound = new Coordinate(CoordinateAtPowerNMinus2.getXValue(), CoordinateAtPowerNMinus2.getYValue());
+            UpperBound = new Coordinate(CoordinateAtPowerN.getXValue(), CoordinateAtPowerN.getYValue());
+            LowerBound = new Coordinate(CoordinateAtPowerNMinus2.getXValue(), CoordinateAtPowerNMinus2.getYValue());
 
             while (true) {
                 // Evaluate bounds, restrict bounds based on the highest
-                double FOfUpperBound = Function.evaluate(UpperBound);
-                double FOfLowerBound = Function.evaluate(LowerBound);
+                FOfUpperBound = Function.evaluate(UpperBound);
+                FOfLowerBound = Function.evaluate(LowerBound);
                 if (FOfLowerBound > FOfUpperBound) {
                     LowerBound = new Coordinate(LoopMidpoint.getXValue(), LoopMidpoint.getYValue());
                 }
@@ -331,10 +338,10 @@ public class PowellMethod extends Thread implements Serializable {
                 // Calculate a new midpoint
                 MidpointX = (UpperBound.getXValue() + LowerBound.getXValue()) / 2.0;
                 MidpointY = (UpperBound.getYValue() + LowerBound.getYValue()) / 2.0;
-                Coordinate NewMidpoint = new Coordinate(MidpointX, MidpointY);
+                NewMidpoint = new Coordinate(MidpointX, MidpointY);
                 // Compare it with the stop condition
-                double FOfCurrentCoordinate = Function.evaluate(NewMidpoint);
-                double FOfLastCoordinate = Function.evaluate(OptimisedCoordinateList.get(OptimisedCoordinateList.size() - 1));
+                FOfCurrentCoordinate = Function.evaluate(NewMidpoint);
+                FOfLastCoordinate = Function.evaluate(OptimisedCoordinateList.get(OptimisedCoordinateList.size() - 1));
                 OptimisedCoordinateList.add(NewMidpoint);
                 if (Math.abs(FOfCurrentCoordinate - FOfLastCoordinate) < Tolerance) {
                     FinalCoordinate = NewMidpoint;

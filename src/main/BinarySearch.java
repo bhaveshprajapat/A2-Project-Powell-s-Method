@@ -6,27 +6,33 @@ package main;
 public class BinarySearch extends LinMin {
     @Override
     void startSearch() throws EvaluationException {
+        // Initialise local variables
+        double LowerBoundaryXValue, LowerBoundaryYValue;
+        Coordinate LowerBoundary, UpperBoundary;
         Coordinate PreviousCoordinate = getStartPoint();
+        double UpperBoundaryXValue, UpperBoundaryYValue;
+        double ZValueForUpperBoundary, ZValueForLowerBoundary, ZValueForCurrentPoint;
+        Coordinate Midpoint;
         int BoundaryRestriction = 1;
+        // Create direction vectors and set their values
+        boolean OptimisingByX = getSearchDirection() == SearchDirection.VECTOR_I;
+        int VectorX = OptimisingByX ? 1 : 0;
+        int VectorY = OptimisingByX ? 0 : 1;
         while (true) {
             // Increment the static counter
             LinMin.setCounter(getCounter() + 1);
-            // Create direction vectors and set their values
-            boolean OptimisingByX = getSearchDirection() == SearchDirection.VECTOR_I;
-            int VectorX = OptimisingByX ? 1 : 0;
-            int VectorY = OptimisingByX ? 0 : 1;
             // Creates lower boundary
-            double LowerBoundaryXValue = PreviousCoordinate.getXValue() - (VectorX * (getBounds() / BoundaryRestriction));
-            double LowerBoundaryYValue = PreviousCoordinate.getYValue() - (VectorY * (getBounds() / BoundaryRestriction));
-            Coordinate LowerBoundary = new Coordinate(LowerBoundaryXValue, LowerBoundaryYValue);
+            LowerBoundaryXValue = PreviousCoordinate.getXValue() - (VectorX * (getBounds() / BoundaryRestriction));
+            LowerBoundaryYValue = PreviousCoordinate.getYValue() - (VectorY * (getBounds() / BoundaryRestriction));
+            LowerBoundary = new Coordinate(LowerBoundaryXValue, LowerBoundaryYValue);
             // Creates upper boundary
-            double UpperBoundaryXValue = PreviousCoordinate.getXValue() + (VectorX * (getBounds() / BoundaryRestriction));
-            double UpperBoundaryYValue = PreviousCoordinate.getYValue() + (VectorY * (getBounds() / BoundaryRestriction));
-            Coordinate UpperBoundary = new Coordinate(UpperBoundaryXValue, UpperBoundaryYValue);
+            UpperBoundaryXValue = PreviousCoordinate.getXValue() + (VectorX * (getBounds() / BoundaryRestriction));
+            UpperBoundaryYValue = PreviousCoordinate.getYValue() + (VectorY * (getBounds() / BoundaryRestriction));
+            UpperBoundary = new Coordinate(UpperBoundaryXValue, UpperBoundaryYValue);
             // All three coordinates are evaluated
-            double ZValueForUpperBoundary = Function.evaluate(UpperBoundary);
-            double ZValueForLowerBoundary = Function.evaluate(LowerBoundary);
-            double ZValueForCurrentPoint = Function.evaluate(getStartPoint());
+            ZValueForUpperBoundary = Function.evaluate(UpperBoundary);
+            ZValueForLowerBoundary = Function.evaluate(LowerBoundary);
+            ZValueForCurrentPoint = Function.evaluate(getStartPoint());
             // Shifts upper bound if its output is highest
             if ((ZValueForUpperBoundary > ZValueForCurrentPoint)
                     && (ZValueForUpperBoundary > ZValueForLowerBoundary)) {
@@ -40,7 +46,7 @@ public class BinarySearch extends LinMin {
                 LowerBoundary.setYValue(getStartPoint().getYValue());
             }
             // Creates the Midpoint between the new bounds and sets the current point
-            Coordinate Midpoint = new Coordinate(
+            Midpoint = new Coordinate(
                     (UpperBoundary.getXValue() + LowerBoundary.getXValue()) / 2.0,
                     (UpperBoundary.getYValue() + LowerBoundary.getYValue()) / 2.0);
             // When the current direction is optimised within the bounds, log it and change the direction
