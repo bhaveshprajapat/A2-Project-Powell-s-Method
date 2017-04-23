@@ -297,7 +297,7 @@ public class PowellMethod extends Thread implements Serializable {
                     break;
                 } else {
                     // Condition detects divergence where the exponential search searches too far away from original search area.
-                    if (MaximumPowerOf2 > Math.pow(Math.ceil(Math.abs(getBounds() + 1)), 4.0)) {
+                    if (MaximumPowerOf2 > Math.pow(Math.ceil(Math.abs(getBounds() + 1)), 2.0)) {
                         divergenceDetected = true;
                         return;
                     }
